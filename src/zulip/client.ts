@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import { 
   ZulipConfig, 
   ZulipMessage, 
@@ -9,6 +9,7 @@ import {
   ZulipScheduledMessage,
   ZulipDraft
 } from '../types.js';
+// Removed logger import - using console for debugging in development mode
 
 export class ZulipClient {
   private client: AxiosInstance;
@@ -52,7 +53,9 @@ export class ZulipClient {
     content: string;
     topic?: string;
   }): Promise<{ id: number }> {
-    console.log('🔍 Debug - sendMessage called with:', JSON.stringify(params, null, 2));
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 Debug - sendMessage called with:', JSON.stringify(params, null, 2));
+    }
     
     // Use the type directly - newer API supports "direct" 
     const payload: any = {
