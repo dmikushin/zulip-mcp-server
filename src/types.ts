@@ -165,6 +165,26 @@ export const UpdateStatusSchema = z.object({
   emoji_code: z.string().optional().describe("Unicode code for status emoji")
 });
 
+export const CreateDraftSchema = z.object({
+  type: z.enum(["stream", "private"]).describe("Draft message type: 'stream' for channels, 'private' for direct messages"),
+  to: z.array(z.number()).describe("Array of user IDs for private messages, or single channel ID for stream messages"),
+  topic: z.string().describe("Topic for stream messages (required even for private messages in API)"),
+  content: z.string().describe("Draft message content with Markdown formatting"),
+  timestamp: z.number().optional().describe("Unix timestamp for draft creation (optional, defaults to current time)")
+});
+
+export const GetUserSchema = z.object({
+  user_id: z.number().describe("Unique user ID to retrieve information for"),
+  client_gravatar: z.boolean().optional().describe("Include Gravatar URL (default: true)"),
+  include_custom_profile_fields: z.boolean().optional().describe("Include custom profile fields (default: false)")
+});
+
+export const GetMessageSchema = z.object({
+  message_id: z.number().describe("Unique message ID to retrieve"),
+  apply_markdown: z.boolean().optional().describe("Return HTML content (true) or raw Markdown (false). Default: true"),
+  allow_empty_topic_name: z.boolean().optional().describe("Allow empty topic names in response (default: false)")
+});
+
 export type SendMessageParams = z.infer<typeof SendMessageSchema>;
 export type GetMessagesParams = z.infer<typeof GetMessagesSchema>;
 export type UploadFileParams = z.infer<typeof UploadFileSchema>;
@@ -173,3 +193,6 @@ export type AddReactionParams = z.infer<typeof AddReactionSchema>;
 export type CreateScheduledMessageParams = z.infer<typeof CreateScheduledMessageSchema>;
 export type GetUserByEmailParams = z.infer<typeof GetUserByEmailSchema>;
 export type UpdateStatusParams = z.infer<typeof UpdateStatusSchema>;
+export type CreateDraftParams = z.infer<typeof CreateDraftSchema>;
+export type GetUserParams = z.infer<typeof GetUserSchema>;
+export type GetMessageParams = z.infer<typeof GetMessageSchema>;

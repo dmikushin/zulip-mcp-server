@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 import { 
   ZulipConfig, 
   ZulipMessage, 
@@ -9,6 +9,7 @@ import {
   ZulipScheduledMessage,
   ZulipDraft
 } from '../types.js';
+// Removed logger import - using console for debugging in development mode
 
 export class ZulipClient {
   private client: AxiosInstance;
@@ -52,7 +53,9 @@ export class ZulipClient {
     content: string;
     topic?: string;
   }): Promise<{ id: number }> {
-    console.log('🔍 Debug - sendMessage called with:', JSON.stringify(params, null, 2));
+    if (process.env.NODE_ENV === 'development') {
+      console.log('🔍 Debug - sendMessage called with:', JSON.stringify(params, null, 2));
+    }
     
     // Use the type directly - newer API supports "direct" 
     const payload: any = {
@@ -343,6 +346,81 @@ export class ZulipClient {
 
   async getCustomEmoji(): Promise<any> {
     const response = await this.client.get('/realm/emoji');
+    return response.data;
+  }
+
+  // New API Methods
+  async createDraft(params: {
+    type: 'stream' | 'private';
+    to: number[];
+    topic: string;
+    content: string;
+    timestamp?: number;
+  }): Promise<{ ids: number[] }> {
+    console.log('🔍 Debug - createDraft called with:', JSON.stringify(params, null, 2));
+    
+    const draftObject = {
+      type: params.type,
+      to: params.to,
+      topic: params.topic,
+      content: params.content,
+      timestamp: params.timestamp || Math.floor(Date.now() / 1000)
+    };
+    
+    // API expects an array of draft objects
+    const payload = [draftObject];
+    
+    console.log('🔍 Debug - Draft payload:', JSON.stringify(payload, null, 2));
+
+    try {
+      // Try JSON first
+      const response = await this.client.post('/drafts', payload);
+      console.log('✅ Debug - Draft created successfully:', response.data);
+      return response.data;
+    } catch (jsonError) {
+      console.log('⚠️ Debug - JSON request failed, trying form-encoded...');
+      if (jsonError instanceof Error) {
+        console.log('Error:', (jsonError as any).response?.data || jsonError.message);
+      }
+      
+      // Fallback to form-encoded
+      const response = await this.client.post('/drafts', payload, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        transformRequest: [(data) => {
+          const params = new URLSearchParams();
+          params.append('drafts', JSON.stringify(data));
+          const formString = params.toString();
+          console.log('🔍 Debug - Form-encoded string:', formString);
+          return formString;
+        }]
+      });
+      
+      console.log('✅ Debug - Form-encoded draft created successfully:', response.data);
+      return response.data;
+    }
+  }
+
+  async getUser(userId: number, params: {
+    client_gravatar?: boolean;
+    include_custom_profile_fields?: boolean;
+  } = {}): Promise<{ user: ZulipUser }> {
+    console.log('🔍 Debug - getUser called with:', { userId, ...params });
+    
+    const response = await this.client.get(`/users/${userId}`, { params });
+    console.log('✅ Debug - User retrieved successfully:', response.data);
+    return response.data;
+  }
+
+  async getMessage(messageId: number, params: {
+    apply_markdown?: boolean;
+    allow_empty_topic_name?: boolean;
+  } = {}): Promise<{ message: ZulipMessage }> {
+    console.log('🔍 Debug - getMessage called with:', { messageId, ...params });
+    
+    const response = await this.client.get(`/messages/${messageId}`, { params });
+    console.log('✅ Debug - Message retrieved successfully:', response.data);
     return response.data;
   }
 }

@@ -93,6 +93,56 @@ NODE_ENV=production
    - Find "API key" section
    - Generate or reveal your API key
 
+### MCP Client Integration
+
+To use this MCP server with any MCP-compliant client, add the following configuration:
+
+#### Claude Desktop Configuration
+
+Add to your Claude Desktop config file:
+```json
+{
+  "mcpServers": {
+    "zulip": {
+      "command": "node",
+      "args": ["/path/to/zulip-mcp-server/dist/server.js"],
+      "env": {
+        "ZULIP_URL": "https://your-organization.zulipchat.com",
+        "ZULIP_EMAIL": "your-bot-email@yourcompany.com", 
+        "ZULIP_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
+```
+
+**Config file locations:**
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+#### Alternative: Using .env File
+
+If you prefer using a `.env` file, ensure it's in the project directory:
+```json
+{
+  "mcpServers": {
+    "zulip": {
+      "command": "node",
+      "args": ["/path/to/zulip-mcp-server/dist/server.js"],
+      "cwd": "/path/to/zulip-mcp-server"
+    }
+  }
+}
+```
+
+#### Other MCP Clients
+
+This server is compatible with any MCP-compliant client using the standard stdio transport:
+
+```bash
+node /path/to/zulip-mcp-server/dist/server.js
+```
+
 ## Development
 
 ### Scripts
