@@ -85,6 +85,10 @@ Thumbs.db
 *-original.*
 *-backup.*
 
+# Documentation files (keep in repo but ignore in tracking)
+CLEANUP.md
+REFACTORING.md
+
 # Lock files (keep package-lock.json but ignore others)
 yarn.lock
 pnpm-lock.yaml
