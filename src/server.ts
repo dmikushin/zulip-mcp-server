@@ -13,7 +13,10 @@ import {
   AddReactionSchema,
   CreateScheduledMessageSchema,
   GetUserByEmailSchema,
-  UpdateStatusSchema
+  UpdateStatusSchema,
+  CreateDraftSchema,
+  GetUserSchema,
+  GetMessageSchema
 } from "./types.js";
 
 // Environment validation
@@ -942,6 +945,133 @@ server.tool(
         content: [{
           type: "text",
           text: `Error getting user groups: ${error instanceof Error ? error.message : 'Unknown error'}`
+        }],
+        isError: true
+      };
+    }
+  }
+);
+
+// New Tools - Draft, User, and Message APIs
+server.tool(
+  "create-draft",
+  "Create a new message draft for later editing or sending. Use this to prepare messages, save work in progress, or compose complex messages that need review before sending. Drafts are saved on the server and can be accessed from any Zulip client.",
+  CreateDraftSchema.shape,
+  async ({ type, to, topic, content, timestamp }) => {
+    try {
+      const result = await zulipClient.createDraft({
+        type,
+        to,
+        topic,
+        content,
+        timestamp
+      });
+      
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            success: true,
+            draft_ids: result.ids,
+            message: `Draft created successfully! Draft IDs: ${result.ids.join(', ')}`
+          }, null, 2)
+        }]
+      };
+    } catch (error) {
+      return {
+        content: [{
+          type: "text",
+          text: `Error creating draft: ${error instanceof Error ? error.message : 'Unknown error'}`
+        }],
+        isError: true
+      };
+    }
+  }
+);
+
+server.tool(
+  "get-user",
+  "Get detailed information about a specific user by their user ID. Use this to retrieve user profiles, check permissions, get contact information, or verify user details when working with user IDs from other API calls.",
+  GetUserSchema.shape,
+  async ({ user_id, client_gravatar, include_custom_profile_fields }) => {
+    try {
+      const result = await zulipClient.getUser(user_id, {
+        client_gravatar,
+        include_custom_profile_fields
+      });
+      
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            user: {
+              id: result.user.user_id,
+              email: result.user.email,
+              full_name: result.user.full_name,
+              is_active: result.user.is_active,
+              is_bot: result.user.is_bot,
+              role: result.user.is_owner ? 'owner' : 
+                    result.user.is_admin ? 'admin' : 
+                    result.user.is_moderator ? 'moderator' : 
+                    result.user.is_guest ? 'guest' : 'member',
+              date_joined: result.user.date_joined,
+              timezone: result.user.timezone,
+              avatar_url: result.user.avatar_url,
+              profile_data: result.user.profile_data
+            }
+          }, null, 2)
+        }]
+      };
+    } catch (error) {
+      return {
+        content: [{
+          type: "text",
+          text: `Error getting user: ${error instanceof Error ? error.message : 'Unknown error'}`
+        }],
+        isError: true
+      };
+    }
+  }
+);
+
+server.tool(
+  "get-message",
+  "Retrieve a specific message by its ID with full details including content, metadata, and formatting. Use this to inspect message content, check edit history, get message context, or analyze message data for processing.",
+  GetMessageSchema.shape,
+  async ({ message_id, apply_markdown, allow_empty_topic_name }) => {
+    try {
+      const result = await zulipClient.getMessage(message_id, {
+        apply_markdown,
+        allow_empty_topic_name
+      });
+      
+      return {
+        content: [{
+          type: "text",
+          text: JSON.stringify({
+            message: {
+              id: result.message.id,
+              sender_id: result.message.sender_id,
+              sender_full_name: result.message.sender_full_name,
+              sender_email: result.message.sender_email,
+              timestamp: new Date(result.message.timestamp * 1000).toISOString(),
+              content: result.message.content,
+              content_type: result.message.content_type,
+              type: result.message.type,
+              stream_id: result.message.stream_id,
+              topic: result.message.topic || result.message.subject,
+              recipient_id: result.message.recipient_id,
+              reactions: result.message.reactions,
+              edit_history: result.message.edit_history
+            }
+          }, null, 2)
+        }]
+      };
+    } catch (error) {
+      return {
+        content: [{
+          type: "text",
+          text: `Error getting message: ${error instanceof Error ? error.message : 'Unknown error'}`
         }],
         isError: true
       };
