@@ -88,6 +88,12 @@ Thumbs.db
 # Documentation files (keep in repo but ignore in tracking)
 CLEANUP.md
 REFACTORING.md
+COMMUNITY_SUBMISSION_GUIDE.md
+MCP_SUBMISSION.md
+TESTING_GUIDE.md
+DEPLOYMENT.md
+ZULIP_API_FIXES.md
+CLAUDE.local.md
 
 # Lock files (keep package-lock.json but ignore others)
 yarn.lock
