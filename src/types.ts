@@ -159,10 +159,11 @@ export const GetUserByEmailSchema = z.object({
 });
 
 export const UpdateStatusSchema = z.object({
-  status_text: z.string().optional().describe("Status message text (e.g., 'In a meeting', 'Working from home')"),
-  away: z.boolean().optional().describe("Set away status (true = away, false = active)"),
-  emoji_name: z.string().optional().describe("Emoji name for status (e.g., 'coffee', 'airplane')"),
-  emoji_code: z.string().optional().describe("Unicode code for status emoji")
+  status_text: z.string().max(60).optional().describe("Status message text (max 60 chars, empty string clears status)"),
+  away: z.boolean().optional().describe("Set away status (deprecated in Zulip 6.0, will be removed)"),
+  emoji_name: z.string().optional().describe("Emoji name: for unicode use short name (e.g., 'coffee', 'airplane'), for realm_emoji use custom name, for zulip_extra use special names like 'zulip'"),
+  emoji_code: z.string().optional().describe("Emoji identifier: for unicode_emoji use codepoint (e.g., '2615' for coffee), for realm_emoji use custom emoji ID, for zulip_extra use emoji ID"),
+  reaction_type: z.enum(["unicode_emoji", "realm_emoji", "zulip_extra_emoji"]).optional().describe("Emoji type: 'unicode_emoji' for standard emojis (default), 'realm_emoji' for organization custom emojis, 'zulip_extra_emoji' for special Zulip emojis")
 });
 
 export const CreateDraftSchema = z.object({
