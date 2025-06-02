@@ -185,6 +185,68 @@ export const GetMessageSchema = z.object({
   allow_empty_topic_name: z.boolean().optional().describe("Allow empty topic names in response (default: false)")
 });
 
+export const ListUsersSchema = z.object({
+  client_gravatar: z.boolean().optional().describe("Include Gravatar URLs for users (default: true)"),
+  include_custom_profile_fields: z.boolean().optional().describe("Include custom profile fields (default: false)")
+});
+
+export const ListStreamsSchema = z.object({
+  include_public: z.boolean().optional().describe("Include public streams (default: true)"),
+  include_subscribed: z.boolean().optional().describe("Include streams user is subscribed to (default: true)"),
+  include_all_active: z.boolean().optional().describe("Include all active streams (default: false)"),
+  include_archived: z.boolean().optional().describe("Include archived streams (default: false)")
+});
+
+export const DeleteMessageSchema = z.object({
+  message_id: z.number().describe("Unique ID of the message to delete")
+});
+
+export const RemoveReactionSchema = z.object({
+  message_id: z.number().describe("ID of the message to remove reaction from"),
+  emoji_name: z.string().describe("Emoji name to remove (e.g., 'thumbs_up', 'heart')"),
+  emoji_code: z.string().optional().describe("Unicode code point for the emoji"),
+  reaction_type: z.enum(["unicode_emoji", "realm_emoji", "zulip_extra_emoji"]).optional().describe("Type of emoji reaction")
+});
+
+export const GetStreamTopicsSchema = z.object({
+  stream_id: z.number().describe("Unique stream ID to get topics for")
+});
+
+export const GetMessageReadReceiptsSchema = z.object({
+  message_id: z.number().describe("Unique message ID to get read receipts for")
+});
+
+export const EditScheduledMessageSchema = z.object({
+  scheduled_message_id: z.number().describe("Unique scheduled message ID to edit"),
+  type: z.enum(["stream", "direct"]).optional().describe("Message type"),
+  to: z.string().optional().describe("Recipients (channel name or comma-separated emails)"),
+  content: z.string().optional().describe("New message content"),
+  topic: z.string().optional().describe("New topic for stream messages"),
+  scheduled_delivery_timestamp: z.number().optional().describe("New delivery timestamp")
+});
+
+export const EditDraftSchema = z.object({
+  draft_id: z.number().describe("Unique draft ID to edit"),
+  type: z.enum(["stream", "direct"]).describe("Draft message type"),
+  to: z.array(z.number()).describe("Array of user IDs or channel ID"),
+  topic: z.string().describe("Topic for the draft"),
+  content: z.string().describe("Draft content"),
+  timestamp: z.number().optional().describe("Updated timestamp")
+});
+
+export const GetSubscribedChannelsSchema = z.object({
+  include_subscribers: z.boolean().optional().describe("Include subscriber lists for channels")
+});
+
+export const GetChannelIdSchema = z.object({
+  stream_name: z.string().describe("Name of the channel to get ID for")
+});
+
+export const GetChannelByIdSchema = z.object({
+  stream_id: z.number().describe("Unique stream ID to get details for"),
+  include_subscribers: z.boolean().optional().describe("Include subscriber list")
+});
+
 export type SendMessageParams = z.infer<typeof SendMessageSchema>;
 export type GetMessagesParams = z.infer<typeof GetMessagesSchema>;
 export type UploadFileParams = z.infer<typeof UploadFileSchema>;
@@ -196,3 +258,14 @@ export type UpdateStatusParams = z.infer<typeof UpdateStatusSchema>;
 export type CreateDraftParams = z.infer<typeof CreateDraftSchema>;
 export type GetUserParams = z.infer<typeof GetUserSchema>;
 export type GetMessageParams = z.infer<typeof GetMessageSchema>;
+export type ListUsersParams = z.infer<typeof ListUsersSchema>;
+export type ListStreamsParams = z.infer<typeof ListStreamsSchema>;
+export type DeleteMessageParams = z.infer<typeof DeleteMessageSchema>;
+export type RemoveReactionParams = z.infer<typeof RemoveReactionSchema>;
+export type GetStreamTopicsParams = z.infer<typeof GetStreamTopicsSchema>;
+export type GetMessageReadReceiptsParams = z.infer<typeof GetMessageReadReceiptsSchema>;
+export type EditScheduledMessageParams = z.infer<typeof EditScheduledMessageSchema>;
+export type EditDraftParams = z.infer<typeof EditDraftSchema>;
+export type GetSubscribedChannelsParams = z.infer<typeof GetSubscribedChannelsSchema>;
+export type GetChannelIdParams = z.infer<typeof GetChannelIdSchema>;
+export type GetChannelByIdParams = z.infer<typeof GetChannelByIdSchema>;

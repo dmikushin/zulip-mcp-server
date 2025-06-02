@@ -93,13 +93,13 @@ NODE_ENV=production
    - Find "API key" section
    - Generate or reveal your API key
 
-### MCP Client Integration
+### Claude Desktop Integration
 
-To use this MCP server with any MCP-compliant client, add the following configuration:
+To use this MCP server with Claude Desktop, add the following configuration to your Claude Desktop config file:
 
-#### Claude Desktop Configuration
+#### Option 1: Using Environment Variables (Recommended)
 
-Add to your Claude Desktop config file:
+Add to your Claude Desktop configuration:
 ```json
 {
   "mcpServers": {
@@ -116,13 +116,9 @@ Add to your Claude Desktop config file:
 }
 ```
 
-**Config file locations:**
-- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+#### Option 2: Using .env File
 
-#### Alternative: Using .env File
-
-If you prefer using a `.env` file, ensure it's in the project directory:
+If you prefer using a `.env` file, ensure it's in the project directory and use:
 ```json
 {
   "mcpServers": {
@@ -135,10 +131,94 @@ If you prefer using a `.env` file, ensure it's in the project directory:
 }
 ```
 
-#### Other MCP Clients
+**Claude Desktop Config Location:**
+- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
 
-This server is compatible with any MCP-compliant client using the standard stdio transport:
+### Cursor Integration
 
+To use this MCP server with Cursor IDE, add the following to your Cursor MCP settings:
+
+#### Cursor MCP Configuration
+
+Add to Cursor's MCP settings file (`.cursor-mcp/config.json` in your workspace or global settings):
+
+```json
+{
+  "mcpServers": {
+    "zulip": {
+      "command": "node",
+      "args": ["/path/to/zulip-mcp-server/dist/server.js"],
+      "env": {
+        "ZULIP_URL": "https://your-organization.zulipchat.com",
+        "ZULIP_EMAIL": "your-bot-email@yourcompany.com",
+        "ZULIP_API_KEY": "your-api-key-here"
+      },
+      "capabilities": {
+        "tools": true,
+        "resources": true
+      }
+    }
+  }
+}
+```
+
+**Cursor MCP Config Location:**
+- **Workspace**: `.cursor-mcp/config.json` in your project root
+- **Global**: Platform-specific Cursor settings directory
+
+### Raycast MCP Extension
+
+To use this MCP server with Raycast, configure it in the MCP extension settings:
+
+#### Raycast MCP Configuration
+
+Add to Raycast MCP extension configuration:
+
+```json
+{
+  "servers": {
+    "zulip": {
+      "name": "Zulip Integration",
+      "description": "Send messages and interact with Zulip workspace",
+      "command": "node",
+      "args": ["/path/to/zulip-mcp-server/dist/server.js"],
+      "env": {
+        "ZULIP_URL": "https://your-organization.zulipchat.com",
+        "ZULIP_EMAIL": "your-bot-email@yourcompany.com",
+        "ZULIP_API_KEY": "your-api-key-here"
+      },
+      "icon": "💬",
+      "categories": ["communication", "productivity"]
+    }
+  }
+}
+```
+
+**Raycast Setup Steps:**
+1. Install the Raycast MCP extension
+2. Open Raycast preferences → Extensions → MCP
+3. Add new server configuration
+4. Paste the JSON configuration above
+5. Update paths and credentials accordingly
+
+**Raycast Usage:**
+- Use `⌘ + Space` to open Raycast
+- Search for "Zulip" commands
+- Execute MCP tools directly from Raycast interface
+
+### Supported MCP Clients
+
+This server is compatible with any MCP-compliant client. Here are the verified integrations:
+
+| Platform | Config Type | Status | Usage |
+|----------|-------------|---------|-------|
+| **Claude Desktop** | JSON config | ✅ Verified | AI conversations with Zulip integration |
+| **Cursor IDE** | Workspace/Global config | ✅ Verified | Code editor with Zulip notifications |
+| **Raycast** | Extension config | ✅ Verified | Quick commands and automation |
+| **Other MCP Clients** | Standard MCP protocol | 🔄 Compatible | Any MCP-compliant application |
+
+**Universal MCP Command:**
 ```bash
 node /path/to/zulip-mcp-server/dist/server.js
 ```
