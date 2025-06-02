@@ -90,6 +90,15 @@ function validateEmailList(emailString: string): { isValid: boolean; emails: str
   };
 }
 
+/**
+ * Filter out undefined values from an object
+ */
+function filterUndefined<T extends Record<string, any>>(obj: T): Partial<T> {
+  return Object.fromEntries(
+    Object.entries(obj).filter(([_, value]) => value !== undefined)
+  ) as Partial<T>;
+}
+
 // Initialize Zulip client
 const config = validateEnvironment();
 const zulipClient = new ZulipClient(config);
@@ -264,7 +273,8 @@ server.tool(
         }
       }
 
-      const result = await zulipClient.sendMessage({ type, to, content, topic });
+      const messageParams = { type, to, content, ...(topic && { topic }) };
+      const result = await zulipClient.sendMessage(messageParams);
       return createSuccessResponse(`Message sent successfully! Message ID: ${result.id}`);
     } catch (error) {
       return createErrorResponse(`Error sending message: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -345,7 +355,11 @@ server.tool(
   EditMessageSchema.shape,
   async ({ message_id, content, topic }) => {
     try {
-      await zulipClient.updateMessage(message_id, { content, topic });
+      const updateParams = filterUndefined({ content, topic });
+      if (Object.keys(updateParams).length === 0) {
+        return createErrorResponse('At least one of content or topic must be provided for message update');
+      }
+      await zulipClient.updateMessage(message_id, updateParams);
       return createSuccessResponse(`Message ${message_id} updated successfully!`);
     } catch (error) {
       return createErrorResponse(`Error updating message: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -508,13 +522,17 @@ server.tool(
   EditScheduledMessageSchema.shape,
   async ({ scheduled_message_id, type, to, content, topic, scheduled_delivery_timestamp }) => {
     try {
-      await zulipClient.editScheduledMessage(scheduled_message_id, {
+      const updateParams = filterUndefined({
         type,
         to,
         content,
         topic,
         scheduled_delivery_timestamp
       });
+      if (Object.keys(updateParams).length === 0) {
+        return createErrorResponse('At least one parameter must be provided to update scheduled message');
+      }
+      await zulipClient.editScheduledMessage(scheduled_message_id, updateParams);
       return createSuccessResponse(`Scheduled message ${scheduled_message_id} updated successfully!`);
     } catch (error) {
       return createErrorResponse(`Error editing scheduled message: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -633,16 +651,17 @@ server.tool(
 );
 
 server.tool(
-  "update-status",
-  "Update user status message and availability.",
+  "update-status", 
+  "Update user status message with emoji and availability. Examples: Unicode emoji (emoji_name: 'coffee', emoji_code: '2615'), custom org emoji (reaction_type: 'realm_emoji'), or Zulip special emoji (reaction_type: 'zulip_extra_emoji').",
   UpdateStatusSchema.shape,
-  async ({ status_text, away, emoji_name, emoji_code }) => {
+  async ({ status_text, away, emoji_name, emoji_code, reaction_type }) => {
     try {
       await zulipClient.updateStatus({
         status_text,
         away,
         emoji_name,
-        emoji_code
+        emoji_code,
+        reaction_type
       });
       return createSuccessResponse(`Status updated successfully!${status_text ? ` Message: "${status_text}"` : ''}${away !== undefined ? ` Away: ${away}` : ''}`);
     } catch (error) {

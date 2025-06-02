@@ -140,11 +140,12 @@ export class ZulipClient {
       return { messages: [response.data.message] };
     }
 
-    const queryParams: any = {
-      anchor: params.anchor || 'newest',
-      num_before: params.num_before || 20,
-      num_after: params.num_after || 0
-    };
+    const queryParams: any = {};
+    
+    // Only set parameters that are provided, with appropriate defaults
+    queryParams.anchor = params.anchor !== undefined ? params.anchor : 'newest';
+    queryParams.num_before = params.num_before !== undefined ? params.num_before : 20;
+    queryParams.num_after = params.num_after !== undefined ? params.num_after : 0;
 
     if (params.narrow) {
       queryParams.narrow = JSON.stringify(params.narrow);
@@ -158,7 +159,11 @@ export class ZulipClient {
     content?: string;
     topic?: string;
   }): Promise<void> {
-    await this.client.patch(`/messages/${messageId}`, params);
+    // Filter out undefined values
+    const filteredParams = Object.fromEntries(
+      Object.entries(params).filter(([_, value]) => value !== undefined)
+    );
+    await this.client.patch(`/messages/${messageId}`, filteredParams);
   }
 
   async deleteMessage(messageId: number): Promise<void> {
@@ -170,11 +175,14 @@ export class ZulipClient {
     emoji_code?: string;
     reaction_type?: string;
   }): Promise<void> {
-    await this.client.post(`/messages/${messageId}/reactions`, {
+    const payload: any = {
       emoji_name: params.emoji_name,
-      emoji_code: params.emoji_code,
       reaction_type: params.reaction_type || 'unicode_emoji'
-    });
+    };
+    if (params.emoji_code !== undefined) {
+      payload.emoji_code = params.emoji_code;
+    }
+    await this.client.post(`/messages/${messageId}/reactions`, payload);
   }
 
   async removeReaction(messageId: number, params: {
@@ -266,7 +274,11 @@ export class ZulipClient {
     topic?: string;
     scheduled_delivery_timestamp?: number;
   }): Promise<void> {
-    await this.client.patch(`/scheduled_messages/${scheduledMessageId}`, params);
+    // Filter out undefined values
+    const filteredParams = Object.fromEntries(
+      Object.entries(params).filter(([_, value]) => value !== undefined)
+    );
+    await this.client.patch(`/scheduled_messages/${scheduledMessageId}`, filteredParams);
   }
 
   async getScheduledMessages(): Promise<{ scheduled_messages: ZulipScheduledMessage[] }> {
@@ -337,7 +349,11 @@ export class ZulipClient {
     client_gravatar?: boolean;
     include_custom_profile_fields?: boolean;
   } = {}): Promise<{ members: ZulipUser[] }> {
-    const response = await this.client.get('/users', { params });
+    // Filter out undefined values
+    const filteredParams = Object.fromEntries(
+      Object.entries(params).filter(([_, value]) => value !== undefined)
+    );
+    const response = await this.client.get('/users', { params: filteredParams });
     return response.data;
   }
 
@@ -345,7 +361,11 @@ export class ZulipClient {
     client_gravatar?: boolean;
     include_custom_profile_fields?: boolean;
   } = {}): Promise<{ user: ZulipUser }> {
-    const response = await this.client.get(`/users/${encodeURIComponent(email)}`, { params });
+    // Filter out undefined values
+    const filteredParams = Object.fromEntries(
+      Object.entries(params).filter(([_, value]) => value !== undefined)
+    );
+    const response = await this.client.get(`/users/${encodeURIComponent(email)}`, { params: filteredParams });
     return response.data;
   }
 
@@ -354,8 +374,19 @@ export class ZulipClient {
     away?: boolean;
     emoji_name?: string;
     emoji_code?: string;
+    reaction_type?: string;
   }): Promise<void> {
-    await this.client.post('/users/me/status', params);
+    // Filter out undefined values
+    const filteredParams: any = {};
+    if (params.status_text !== undefined) filteredParams.status_text = params.status_text;
+    if (params.away !== undefined) filteredParams.away = params.away;
+    if (params.emoji_name !== undefined) filteredParams.emoji_name = params.emoji_name;
+    if (params.emoji_code !== undefined) filteredParams.emoji_code = params.emoji_code;
+    if (params.reaction_type !== undefined) filteredParams.reaction_type = params.reaction_type;
+    
+    console.error('🔍 Debug - updateStatus filtered params:', JSON.stringify(filteredParams, null, 2));
+    
+    await this.client.post('/users/me/status', filteredParams);
   }
 
   async getUserGroups(): Promise<{ user_groups: ZulipUserGroup[] }> {
