@@ -329,10 +329,6 @@ All errors include helpful messages for debugging.
 4. Ensure TypeScript compilation passes
 5. Submit a pull request
 
-## License
-
-MIT License - see LICENSE file for details.
-
 ## Support
 
 For issues and questions:
