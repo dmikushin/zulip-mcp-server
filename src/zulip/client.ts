@@ -9,6 +9,49 @@ import {
   ZulipScheduledMessage,
   ZulipDraft
 } from '../types.js';
+
+/**
+ * Debug logging utility - only logs in development
+ */
+function debugLog(message: string, ...args: any[]) {
+  if (process.env.NODE_ENV === 'development' || process.env.DEBUG === 'true') {
+    debugLog(message, ...args);
+  }
+}
+
+/**
+ * Utility to create form-encoded request configuration
+ */
+function createFormEncodedConfig(data: any) {
+  return {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    transformRequest: [(requestData: any) => {
+      const params = new URLSearchParams();
+      Object.keys(requestData).forEach(key => {
+        params.append(key, requestData[key]);
+      });
+      return params.toString();
+    }]
+  };
+}
+
+/**
+ * Utility to create form-encoded config for array data (like drafts)
+ */
+function createFormEncodedArrayConfig(arrayData: any[], arrayKey: string) {
+  return {
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded'
+    },
+    transformRequest: [() => {
+      const params = new URLSearchParams();
+      params.append(arrayKey, JSON.stringify(arrayData));
+      return params.toString();
+    }]
+  };
+}
 // Removed logger import - using console for debugging in development mode
 
 export class ZulipClient {
@@ -36,9 +79,25 @@ export class ZulipClient {
       (error) => {
         if (error.response) {
           const { status, data } = error.response;
-          throw new Error(`Zulip API Error (${status}): ${data.msg || data.message || 'Unknown error'}`);
+          const message = data.msg || data.message || 'Unknown error';
+          
+          // Provide helpful hints for common errors
+          if (message.includes('No such user')) {
+            throw new Error(`User not found: ${message}. Use the 'search-users' tool to find the correct email address.`);
+          }
+          if (message.includes('Stream does not exist') || message.includes('Invalid stream')) {
+            throw new Error(`Channel not found: ${message}. Use 'get-subscribed-channels' to see available channels and check exact spelling.`);
+          }
+          if (message.includes('Invalid email')) {
+            throw new Error(`Invalid email format: ${message}. Use actual email addresses from 'search-users' tool, not display names.`);
+          }
+          if (message.includes('Message not found') || message.includes('Invalid message')) {
+            throw new Error(`Message not found: ${message}. The message may have been deleted or you may not have access to it.`);
+          }
+          
+          throw new Error(`Zulip API Error (${status}): ${message}`);
         } else if (error.request) {
-          throw new Error(`Network Error: Unable to reach Zulip server at ${config.url}`);
+          throw new Error(`Network Error: Unable to reach Zulip server at ${config.url}. Check your ZULIP_URL environment variable.`);
         } else {
           throw new Error(`Request Error: ${error.message}`);
         }
@@ -54,7 +113,7 @@ export class ZulipClient {
     topic?: string;
   }): Promise<{ id: number }> {
     if (process.env.NODE_ENV === 'development') {
-      console.error('🔍 Debug - sendMessage called with:', JSON.stringify(params, null, 2));
+      debugLog('🔍 Debug - sendMessage called with:', JSON.stringify(params, null, 2));
     }
     
     // Use the type directly - newer API supports "direct" 
@@ -72,7 +131,7 @@ export class ZulipClient {
       
       // Try both formats to see which works
       payload.to = recipients;  // Array format first
-      console.error('🔍 Debug - Direct message recipients:', recipients);
+      debugLog('🔍 Debug - Direct message recipients:', recipients);
     } else {
       // For stream messages, 'to' is the stream name
       payload.to = params.to;
@@ -81,17 +140,17 @@ export class ZulipClient {
       }
     }
 
-    console.error('🔍 Debug - Final payload:', JSON.stringify(payload, null, 2));
+    debugLog('🔍 Debug - Final payload:', JSON.stringify(payload, null, 2));
 
     try {
       // Try JSON first (modern API)
       const response = await this.client.post('/messages', payload);
-      console.error('✅ Debug - Message sent successfully:', response.data);
+      debugLog('✅ Debug - Message sent successfully:', response.data);
       return response.data;
     } catch (jsonError) {
-      console.error('⚠️ Debug - JSON request failed, trying form-encoded...');
+      debugLog('⚠️ Debug - JSON request failed, trying form-encoded...');
       if (jsonError instanceof Error) {
-        console.error('Error:', (jsonError as any).response?.data || jsonError.message);
+        debugLog('Error:', (jsonError as any).response?.data || jsonError.message);
       }
       
       // Fallback to form-encoded with different recipient format
@@ -104,7 +163,7 @@ export class ZulipClient {
         formPayload.to = JSON.stringify(recipients);
       }
       
-      console.error('🔍 Debug - Form payload:', JSON.stringify(formPayload, null, 2));
+      debugLog('🔍 Debug - Form payload:', JSON.stringify(formPayload, null, 2));
       
       const response = await this.client.post('/messages', formPayload, {
         headers: {
@@ -118,12 +177,12 @@ export class ZulipClient {
             }
           }
           const formString = params.toString();
-          console.error('🔍 Debug - Form-encoded string:', formString);
+          debugLog('🔍 Debug - Form-encoded string:', formString);
           return formString;
         }]
       });
       
-      console.error('✅ Debug - Form-encoded message sent successfully:', response.data);
+      debugLog('✅ Debug - Form-encoded message sent successfully:', response.data);
       return response.data;
     }
   }
@@ -376,17 +435,41 @@ export class ZulipClient {
     emoji_code?: string;
     reaction_type?: string;
   }): Promise<void> {
-    // Filter out undefined values
+    // Filter out undefined values and empty strings
     const filteredParams: any = {};
-    if (params.status_text !== undefined) filteredParams.status_text = params.status_text;
+    if (params.status_text !== undefined && params.status_text !== null) {
+      filteredParams.status_text = params.status_text;
+    }
     if (params.away !== undefined) filteredParams.away = params.away;
-    if (params.emoji_name !== undefined) filteredParams.emoji_name = params.emoji_name;
-    if (params.emoji_code !== undefined) filteredParams.emoji_code = params.emoji_code;
-    if (params.reaction_type !== undefined) filteredParams.reaction_type = params.reaction_type;
+    if (params.emoji_name !== undefined && params.emoji_name !== '') {
+      filteredParams.emoji_name = params.emoji_name;
+    }
+    if (params.emoji_code !== undefined && params.emoji_code !== '') {
+      filteredParams.emoji_code = params.emoji_code;
+    }
+    if (params.reaction_type !== undefined && params.reaction_type !== '') {
+      filteredParams.reaction_type = params.reaction_type;
+    }
     
-    console.error('🔍 Debug - updateStatus filtered params:', JSON.stringify(filteredParams, null, 2));
+    debugLog('🔍 Debug - updateStatus filtered params:', JSON.stringify(filteredParams, null, 2));
     
-    await this.client.post('/users/me/status', filteredParams);
+    // Zulip expects form-encoded data for this endpoint
+    const response = await this.client.post('/users/me/status', filteredParams, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      transformRequest: [(data) => {
+        const params = new URLSearchParams();
+        Object.keys(data).forEach(key => {
+          params.append(key, data[key]);
+        });
+        const formString = params.toString();
+        debugLog('🔍 Debug - Form-encoded status update:', formString);
+        return formString;
+      }]
+    });
+    
+    debugLog('✅ Debug - Status updated successfully:', response.data);
   }
 
   async getUserGroups(): Promise<{ user_groups: ZulipUserGroup[] }> {
@@ -418,59 +501,42 @@ export class ZulipClient {
     content: string;
     timestamp?: number;
   }): Promise<{ ids: number[] }> {
-    console.error('🔍 Debug - createDraft called with:', JSON.stringify(params, null, 2));
-    
-    const draftObject = {
+    const draftObject: any = {
       type: params.type,
       to: params.to,
       topic: params.topic,
-      content: params.content,
-      timestamp: params.timestamp || Math.floor(Date.now() / 1000)
+      content: params.content
     };
     
-    // API expects an array of draft objects
+    // Only include timestamp if provided, otherwise let server set it
+    if (params.timestamp !== undefined) {
+      draftObject.timestamp = params.timestamp;
+    }
+    
     const payload = [draftObject];
     
-    console.error('🔍 Debug - Draft payload:', JSON.stringify(payload, null, 2));
-
-    try {
-      // Try JSON first
-      const response = await this.client.post('/drafts', payload);
-      console.error('✅ Debug - Draft created successfully:', response.data);
-      return response.data;
-    } catch (jsonError) {
-      console.error('⚠️ Debug - JSON request failed, trying form-encoded...');
-      if (jsonError instanceof Error) {
-        console.error('Error:', (jsonError as any).response?.data || jsonError.message);
-      }
-      
-      // Fallback to form-encoded
-      const response = await this.client.post('/drafts', payload, {
-        headers: {
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        transformRequest: [(data) => {
-          const params = new URLSearchParams();
-          params.append('drafts', JSON.stringify(data));
-          const formString = params.toString();
-          console.error('🔍 Debug - Form-encoded string:', formString);
-          return formString;
-        }]
-      });
-      
-      console.error('✅ Debug - Form-encoded draft created successfully:', response.data);
-      return response.data;
-    }
+    const response = await this.client.post('/drafts', {}, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      transformRequest: [(data) => {
+        const params = new URLSearchParams();
+        params.append('drafts', JSON.stringify(payload));
+        return params.toString();
+      }]
+    });
+    
+    return response.data;
   }
 
   async getUser(userId: number, params: {
     client_gravatar?: boolean;
     include_custom_profile_fields?: boolean;
   } = {}): Promise<{ user: ZulipUser }> {
-    console.error('🔍 Debug - getUser called with:', { userId, ...params });
+    debugLog('🔍 Debug - getUser called with:', { userId, ...params });
     
     const response = await this.client.get(`/users/${userId}`, { params });
-    console.error('✅ Debug - User retrieved successfully:', response.data);
+    debugLog('✅ Debug - User retrieved successfully:', response.data);
     return response.data;
   }
 
@@ -478,10 +544,10 @@ export class ZulipClient {
     apply_markdown?: boolean;
     allow_empty_topic_name?: boolean;
   } = {}): Promise<{ message: ZulipMessage }> {
-    console.error('🔍 Debug - getMessage called with:', { messageId, ...params });
+    debugLog('🔍 Debug - getMessage called with:', { messageId, ...params });
     
     const response = await this.client.get(`/messages/${messageId}`, { params });
-    console.error('✅ Debug - Message retrieved successfully:', response.data);
+    debugLog('✅ Debug - Message retrieved successfully:', response.data);
     return response.data;
   }
 }
