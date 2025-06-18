@@ -5,6 +5,7 @@
  * Maintains full MCP compliance with better organization
  */
 
+import 'dotenv/config';
 import { McpServer, ResourceTemplate } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
@@ -45,7 +46,14 @@ function validateEnvironment(): ZulipConfig {
 
   if (!url || !email || !apiKey) {
     throw new Error(
-      "Missing required environment variables. Please set ZULIP_URL, ZULIP_EMAIL, and ZULIP_API_KEY"
+      `Missing required environment variables. Please set:
+      - ZULIP_URL: Your Zulip server URL (e.g., https://your-org.zulipchat.com)
+      - ZULIP_EMAIL: Your bot/user email address
+      - ZULIP_API_KEY: Your API key from Zulip settings
+      
+      You can set these as environment variables or create a .env file in the project root.
+      
+      Missing: ${!url ? 'ZULIP_URL ' : ''}${!email ? 'ZULIP_EMAIL ' : ''}${!apiKey ? 'ZULIP_API_KEY ' : ''}`
     );
   }
 
