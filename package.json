@@ -1,6 +1,6 @@
 {
   "name": "zulip-mcp-server",
-  "version": "1.0.0",
+  "version": "1.5.0",
   "description": "MCP server that exposes Zulip REST API capabilities as tools for LLMs",
   "main": "dist/server.js",
   "type": "module",
