@@ -25,8 +25,8 @@
 
 3. **Before committing**:
    ```bash
-   npm run build    # Ensure build succeeds
-   npm run lint     # Fix linting issues
+   npm run build    # Clean build (removes dist/ then compiles)
+   npm run lint     # Fix linting issues  
    npm run typecheck # Ensure type safety
    ```
 
@@ -68,7 +68,7 @@ chore(deps): update package-lock.json and fix security vulnerabilities
 - Tag releases with `v` prefix (e.g., `v1.5.0`)
 
 ### 🔍 Code Review Checklist
-- [ ] Tests pass (`npm test`)
+- [ ] Quality checks pass (`npm run quality`)
 - [ ] Builds successfully (`npm run build`)
 - [ ] No linting errors (`npm run lint`)
 - [ ] No TypeScript errors (`npm run typecheck`)
@@ -76,6 +76,7 @@ chore(deps): update package-lock.json and fix security vulnerabilities
 - [ ] Documentation updated if API changed
 - [ ] Commit messages follow conventional format
 - [ ] No security vulnerabilities (`npm audit`)
+- [ ] Tests added for new features (when test framework is implemented)
 
 ### 🛡️ Security Practices
 - Never commit API keys or sensitive data
@@ -92,11 +93,21 @@ chore(deps): update package-lock.json and fix security vulnerabilities
 - Add inline code comments for complex logic
 
 ### 🧪 Testing Standards
+
+**Current State**: Tests not yet implemented - this is a TODO item.
+
+**When implementing tests, ensure**:
 - Write tests for new tools and features
 - Test MCP tool schemas and responses
 - Include integration tests for Zulip API calls
 - Test error handling and edge cases
 - Validate environment variable handling
+- Mock Zulip API responses for consistent testing
+
+**Testing Commands**:
+- `npm run quality` - Lint, typecheck, and audit (current quality baseline)
+- `npm run quality-full` - Includes tests (use when tests are implemented)
+- `npm test` - Run test suite (currently no tests)
 
 ### 🚀 Release Process
 1. Update version in package.json
@@ -123,3 +134,33 @@ chore(deps): update package-lock.json and fix security vulnerabilities
 - Test tools with actual MCP clients (Claude Desktop)
 - Document usage patterns in resources
 - Follow MCP specification strictly
+
+## 📋 TODO: Testing Implementation
+
+**Priority**: High - Need proper testing before claiming "quality standards"
+
+**Test Categories to Implement**:
+1. **MCP Tool Tests**:
+   - Validate tool schemas (Zod validation)
+   - Test tool response formats
+   - Test error handling in tools
+
+2. **Zulip Client Tests**:
+   - Mock Zulip API responses
+   - Test API call formatting
+   - Test error message enhancements
+
+3. **Environment Tests**:
+   - Test dotenv loading
+   - Test environment validation
+   - Test missing variable error messages
+
+4. **Integration Tests**:
+   - Test MCP server startup
+   - Test tool execution end-to-end
+   - Test resource loading
+
+**Recommended Testing Stack**:
+- Jest (already configured)
+- Mock Zulip API responses with nock or axios-mock-adapter
+- MCP testing utilities from @modelcontextprotocol/sdk

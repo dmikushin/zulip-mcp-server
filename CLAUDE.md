@@ -4,193 +4,186 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is an MCP (Model Context Protocol) server that exposes key capabilities of the Zulip REST API as tools for LLMs. The server acts as a bridge between LLMs and Zulip, allowing AI assistants to interact with Zulip chat workspaces programmatically.
+This is an MCP (Model Context Protocol) server that exposes Zulip REST API capabilities as tools for LLMs. The server acts as a bridge between LLMs and Zulip workspaces, enabling AI assistants to send messages, retrieve chat history, manage users, and perform other Zulip operations programmatically.
 
 ## Technology Stack
 
-- **Language**: TypeScript/Node.js
+- **Language**: TypeScript/Node.js (ES modules)
 - **Framework**: MCP TypeScript SDK (`@modelcontextprotocol/sdk`)
-- **Zulip Integration**: Zulip REST API client
-- **Transport**: StdioServerTransport (for CLI) or StreamableHTTPServerTransport (for remote access)
+- **API Client**: Custom Zulip REST API client with axios
+- **Schema Validation**: Zod for input validation
+- **Transport**: StdioServerTransport for CLI usage
 
-## Development Commands
+## Essential Development Commands
 
 ```bash
-# Install dependencies
-npm install
+# Development
+npm run dev              # Live development server with tsx
+npm run build           # Clean build: removes dist/ then compiles TypeScript
+npm run clean           # Remove dist/ folder (clear build artifacts)
+npm run build:watch     # TypeScript compilation in watch mode
+npm start              # Run compiled server from dist/
 
-# Run development server
-npm run dev
+# Code Quality (Current Baseline)
+npm run quality        # lint + typecheck + audit
+npm run lint           # ESLint check
+npm run lint:fix       # Auto-fix ESLint issues
+npm run typecheck      # TypeScript compilation check
+npm run audit:fix      # Fix npm security vulnerabilities
 
-# Build for production
-npm run build
+# Quality with Tests (Future - currently fails)
+npm run quality-full   # Includes tests when implemented
+npm test              # Jest (no tests implemented yet)
 
-# Run tests
-npm test
-
-# Lint and type check
-npm run lint
-npm run typecheck
+# Pre-commit
+npm run precommit     # lint + typecheck + build
 ```
 
-## Project Structure
+## Current Project Structure
 
 ```
 src/
-├── server.ts           # Main MCP server setup
-├── tools/             # Zulip API tools
-│   ├── messages.ts    # Message operations
-│   ├── streams.ts     # Stream management
-│   ├── users.ts       # User operations
-│   └── index.ts       # Tool exports
-├── resources/         # Optional: Zulip data resources
-├── zulip/            # Zulip API client wrapper
-└── types.ts          # TypeScript type definitions
+├── server.ts          # Main MCP server - all tools/resources defined here
+├── types.ts           # Zod schemas and TypeScript type definitions
+└── zulip/
+    └── client.ts      # Zulip REST API client implementation
 ```
+
+**Note**: The architecture is currently monolithic with all MCP tools and resources defined in `server.ts`. The documented `tools/` directory structure doesn't exist yet.
 
 ## MCP Server Architecture
 
-The server implements the MCP specification using the TypeScript SDK:
+The server is implemented as a single file (`server.ts`) that:
+
+1. **Environment Setup**: Validates required environment variables with helpful error messages
+2. **Resource Registration**: Provides contextual data (user directory, channels, formatting guide, common patterns)
+3. **Tool Registration**: Implements Zulip API operations as MCP tools
+4. **Transport**: Uses StdioServerTransport for CLI integration
 
 ```typescript
-import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+// Key architectural pattern
+import 'dotenv/config';  // Automatic .env loading
+const server = new McpServer({ name: "zulip-mcp-server", version: "1.5.0" });
 
-const server = new McpServer({
-  name: "zulip-mcp-server",
-  version: "1.0.0"
-});
+// Resources provide contextual data
+server.resource("users-directory", "zulip://users", handler);
 
-// Tools for Zulip operations
-server.tool("send-message", schema, handler);
-server.tool("get-messages", schema, handler);
+// Tools provide Zulip operations  
+server.tool("send-message", SendMessageSchema.shape, handler);
 ```
 
-## Zulip Instance Configuration
+## Environment Configuration
 
-- **Zulip URL**: https://your-zulip-instance.com (configure in environment variables)
-- **Authentication**: Bot token or API key via environment variables
-- **Base API URL**: https://your-zulip-instance.com/api/v1/
-
-## Key Zulip API Tools to Implement
-
-### Messages (`/api/v1/messages`)
-- `send-message`: Send to channels or direct messages
-  - **Required**: `type` (channel/direct), `to` (channel name or user IDs), `content`
-  - **Optional**: `topic` (for channel messages), `queue_id`, `local_id`
-- `get-messages`: Retrieve message history with advanced filtering
-  - **Parameters**: `anchor` (newest/oldest/message_id), `narrow` (filters), `num_before/after`
-  - **Filtering**: By sender, channel, topic, search terms
-  - **Pagination**: Max 1000 messages per request (hard limit 5000)
-- `update-message`: Edit existing messages
-- `delete-message`: Delete messages
-- `get-message-history`: Get edit history of a message
-- `add-reaction`: Add emoji reactions to messages
-- `remove-reaction`: Remove emoji reactions
-
-### Channels/Streams (`/api/v1/streams`)
-- `list-streams`: Get all accessible channels
-  - **Parameters**: `include_public`, `include_subscribed`, `exclude_archived`
-  - **Returns**: `stream_id`, `name`, `description`, `invite_only`, `is_archived`
-- `get-stream-info`: Channel details and settings
-- `create-stream`: Create new channels
-- `update-stream`: Modify channel settings
-- `archive-stream`: Archive channels
-- `subscribe-to-stream`: Add users to channels
-- `unsubscribe-from-stream`: Remove users from channels
-- `get-stream-topics`: Get topics in a channel
-
-### Users (`/api/v1/users`)
-- `list-users`: All users in organization
-  - **Returns**: User ID, email, full name, role, status, avatar, custom fields
-- `get-user-info`: User profile and details
-- `get-user-by-email`: Find user by email address
-- `create-user`: Add new users (admin only)
-- `update-user`: Modify user information
-- `deactivate-user`: Deactivate user accounts
-- `reactivate-user`: Reactivate user accounts
-- `get-user-groups`: List user groups
-- `create-user-group`: Create user groups
-- `update-user-status`: Set user presence/status
-
-### Real-time Events (`/api/v1/register`, `/api/v1/events`)
-- `register-event-queue`: Register for real-time events
-  - **Event types**: messages, subscriptions, users, realm_emoji
-  - **Filtering**: By event types and narrow parameters
-- `get-events`: Poll for events from registered queue
-- `delete-event-queue`: Clean up event queue
-
-### Organization & Server (`/api/v1/server_settings`, `/api/v1/realm`)
-- `get-server-settings`: Server configuration and features
-- `get-realm-info`: Organization settings and policies
-- `get-realm-emoji`: Custom emoji in organization
-- `upload-file`: Upload files and images
-- `get-attachments`: List uploaded files
-
-### Advanced Features
-- `get-scheduled-messages`: List scheduled messages
-- `create-scheduled-message`: Schedule messages for later
-- `edit-scheduled-message`: Modify scheduled messages
-- `delete-scheduled-message`: Cancel scheduled messages
-- `get-drafts`: Get saved message drafts
-- `create-draft`: Save message drafts
-- `edit-draft`: Update message drafts
-
-## Authentication Pattern
-
-Use environment variables for Zulip credentials:
-```typescript
-const zulipConfig = {
-  url: process.env.ZULIP_URL,
-  email: process.env.ZULIP_EMAIL,
-  apiKey: process.env.ZULIP_API_KEY
-};
+**Required Variables** (set in `.env` file or environment):
+```bash
+ZULIP_URL=https://your-org.zulipchat.com
+ZULIP_EMAIL=your-bot@your-org.zulipchat.com  
+ZULIP_API_KEY=your_api_key_here
 ```
 
-## Tool Implementation Pattern
+**Optional**:
+```bash
+DEBUG=true                    # Enable debug logging
+NODE_ENV=development         # Environment mode
+```
 
-Follow this pattern for implementing MCP tools:
+The server automatically loads `.env` files and provides detailed error messages for missing variables.
 
+## Current MCP Tools Implementation
+
+**Helper Tools** (LLM-friendly discovery):
+- `search-users` - Find users by name/email before sending DMs
+- `get-started` - Test connection and get workspace overview
+
+**Message Operations**:
+- `send-message` - Send to channels or direct messages
+- `get-messages` - Retrieve message history with filtering
+- `edit-message` - Modify existing messages  
+- `delete-message` - Remove messages
+- `add-emoji-reaction` / `remove-emoji-reaction` - React to messages
+- `get-message` - Get specific message details
+- `get-message-read-receipts` - Check who read messages
+
+**Channel/Stream Management**:
+- `get-subscribed-channels` - List user's subscriptions
+- `get-channel-id` - Get channel ID by name
+- `get-channel-by-id` - Detailed channel information
+- `get-topics-in-channel` - Browse recent topics
+
+**User Operations**:
+- `get-users` - List organization members
+- `get-user-by-email` - Find user by email
+- `get-user` - Get user details by ID
+- `update-status` - Set user status message
+- `get-user-groups` - List available user groups
+
+**Scheduling & Drafts**:
+- `create-scheduled-message` / `edit-scheduled-message` - Schedule messages
+- `get-drafts` / `create-draft` / `edit-draft` - Manage message drafts
+- `upload-file` - Share files and images
+
+**MCP Resources Available**:
+- `users-directory` (zulip://users) - Browse organization members
+- `channels-directory` (zulip://channels) - Explore available channels
+- `message-formatting-guide` (zulip://formatting/guide) - Markdown syntax reference
+- `common-patterns` (zulip://patterns/common) - LLM usage workflows and troubleshooting
+
+## Key Implementation Patterns
+
+### Environment Validation with Helpful Errors
 ```typescript
-import { z } from "zod";
+function validateEnvironment(): ZulipConfig {
+  if (!url || !email || !apiKey) {
+    throw new Error(`Missing required environment variables. Please set:
+      - ZULIP_URL: Your Zulip server URL (e.g., https://your-org.zulipchat.com)
+      - ZULIP_EMAIL: Your bot/user email address  
+      - ZULIP_API_KEY: Your API key from Zulip settings
+      
+      Missing: ${!url ? 'ZULIP_URL ' : ''}${!email ? 'ZULIP_EMAIL ' : ''}${!apiKey ? 'ZULIP_API_KEY ' : ''}`);
+  }
+}
+```
 
+### MCP Tool Pattern (using Zod schemas from types.ts)
+```typescript
 server.tool(
   "tool-name",
-  {
-    param1: z.string().describe("Description"),
-    param2: z.number().optional()
-  },
-  async ({ param1, param2 }) => {
+  SchemaFromTypes.shape,  // Import from types.ts
+  async (params) => {
     try {
-      const result = await zulipClient.someOperation(param1, param2);
-      return {
-        content: [{
-          type: "text",
-          text: JSON.stringify(result, null, 2)
-        }]
-      };
+      const result = await zulipClient.operation(params);
+      return createSuccessResponse(JSON.stringify(result, null, 2));
     } catch (error) {
-      return {
-        content: [{
-          type: "text", 
-          text: `Error: ${error.message}`
-        }],
-        isError: true
-      };
+      return createErrorResponse(`Error: ${error.message}`);
     }
   }
 );
 ```
 
-## Error Handling
+### Enhanced Error Messages (in zulip/client.ts)
+The Zulip client provides contextual error guidance:
+- "User not found" → Points to `search-users` tool
+- "Channel not found" → Points to `get-subscribed-channels`
+- "Invalid email" → Explains to use actual emails, not display names
 
-- Use try-catch blocks for all Zulip API calls
-- Return structured error responses with `isError: true`
-- Include helpful error messages for debugging
-- Handle rate limiting and network errors gracefully
+## LLM Usability Features
 
-## Testing
+**Discovery Workflow**: `get-started` → `search-users` → `send-message`
+**Common Patterns Resource**: Step-by-step examples for typical workflows
+**Helpful Tool Descriptions**: Clear guidance on email vs display names, case sensitivity, required fields
 
-- Use MCP Inspector for interactive testing: `npx @modelcontextprotocol/inspector`
-- Test with real Zulip workspace in development
-- Mock Zulip API for unit tests
+## Testing & Quality
+
+**Current State**: No tests implemented yet (TODO item in DEVELOPMENT.md)
+
+**Interactive Testing**:
+```bash
+npx @modelcontextprotocol/inspector  # Test MCP tools interactively
+npm run dev                          # Test against real Zulip workspace
+```
+
+**Quality Checks**:
+```bash
+npm run quality      # Current baseline: lint + typecheck + audit
+npm run quality-full # Future: includes tests when implemented
+```

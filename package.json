@@ -5,17 +5,20 @@
   "main": "dist/server.js",
   "type": "module",
   "scripts": {
-    "build": "tsc",
+    "build": "npm run clean && tsc",
+    "build:watch": "tsc --watch",
+    "clean": "rm -rf dist",
     "dev": "tsx src/server.ts",
     "start": "node dist/server.js",
-    "test": "jest --passWithNoTests",
+    "test": "jest",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "typecheck": "tsc --noEmit",
     "precommit": "npm run lint && npm run typecheck && npm run build",
     "prepare": "npm run build",
     "audit:fix": "npm audit fix",
-    "quality": "npm run lint && npm run typecheck && npm run test && npm audit"
+    "quality": "npm run lint && npm run typecheck && npm audit",
+    "quality-full": "npm run lint && npm run typecheck && npm run test && npm audit"
   },
   "keywords": [
     "mcp",
