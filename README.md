@@ -6,7 +6,7 @@ A Model Context Protocol (MCP) server that exposes Zulip REST API capabilities a
 
 ### 🔄 **Resources** (Contextual Data)
 - **User Directory**: Browse organization members with roles and status
-- **Channel Directory**: Explore available channels and permissions  
+- **Stream Directory**: Explore available streams and permissions  
 - **Message Formatting Guide**: Complete Zulip markdown syntax reference
 - **Organization Info**: Server settings, policies, and custom emoji
 - **User Groups**: Available groups for mentions and permissions
@@ -18,7 +18,7 @@ A Model Context Protocol (MCP) server that exposes Zulip REST API capabilities a
 - `get-started` - Test connection and get workspace overview
 
 #### Message Operations
-- `send-message` - Send to channels or direct messages
+- `send-message` - Send to streams or direct messages
 - `get-messages` - Retrieve with advanced filtering and search
 - `get-message` - Get detailed information about specific message
 - `upload-file` - Share files and images
@@ -35,11 +35,11 @@ A Model Context Protocol (MCP) server that exposes Zulip REST API capabilities a
 - `get-drafts` - Retrieve saved drafts
 - `edit-draft` - Update draft content
 
-#### Channel Management
-- `get-subscribed-channels` - List user's channel subscriptions
-- `get-channel-id` - Get channel ID by name
-- `get-channel-by-id` - Detailed channel information
-- `get-topics-in-channel` - Browse recent topics
+#### Stream Management
+- `get-subscribed-streams` - List user's stream subscriptions
+- `get-stream-id` - Get stream ID by name
+- `get-stream-by-id` - Detailed stream information
+- `get-topics-in-stream` - Browse recent topics
 
 #### User Operations
 - `get-users` - List organization members
@@ -47,6 +47,15 @@ A Model Context Protocol (MCP) server that exposes Zulip REST API capabilities a
 - `get-user` - Get detailed user information by ID
 - `update-status` - Set status message and availability
 - `get-user-groups` - List available user groups
+
+## 📝 Zulip Terminology: Streams vs Channels
+
+In Zulip, **"streams"** and **"channels"** refer to the same concept:
+- **Stream** = Official Zulip terminology (used in API, tools, interface)
+- **Channel** = Common term from Slack/Discord/Teams  
+- **Same thing** = Conversation spaces where teams discuss topics
+
+This MCP server uses "stream" to match Zulip's official documentation and API.
 
 ## Installation & Setup
 
@@ -262,7 +271,7 @@ npx @modelcontextprotocol/inspector npm start
 
 ### Sending Messages
 ```typescript
-// Send to a channel
+// Send to a stream
 await callTool("send-message", {
   type: "stream",
   to: "general",
@@ -280,7 +289,7 @@ await callTool("send-message", {
 
 ### Getting Messages
 ```typescript
-// Get recent messages from a channel
+// Get recent messages from a stream
 await callTool("get-messages", {
   narrow: [["stream", "general"], ["topic", "announcements"]],
   num_before: 50
@@ -292,15 +301,15 @@ await callTool("get-messages", {
 });
 ```
 
-### Channel Management
+### Stream Management
 ```typescript
-// List subscribed channels
-await callTool("get-subscribed-channels", {
+// List subscribed streams
+await callTool("get-subscribed-streams", {
   include_subscribers: true
 });
 
-// Get channel topics
-await callTool("get-topics-in-channel", {
+// Get stream topics
+await callTool("get-topics-in-stream", {
   stream_id: 123
 });
 ```
@@ -311,7 +320,7 @@ The server includes a comprehensive formatting guide resource. Zulip supports:
 
 - **Standard Markdown**: Bold, italic, code, links, lists
 - **Mentions**: `@**Full Name**` (notify), `@_**Name**_` (silent)
-- **Channel Links**: `#**channel-name**`
+- **Stream Links**: `#**stream-name**`
 - **Code Blocks**: With syntax highlighting
 - **Math**: LaTeX expressions with `$$math$$`
 - **Spoilers**: `||hidden content||`

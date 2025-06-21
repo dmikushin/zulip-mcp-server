@@ -157,12 +157,12 @@ server.resource(
 );
 
 server.resource(
-  "channels-directory", 
-  new ResourceTemplate("zulip://channels?include_archived={include_archived}", { list: undefined }),
+  "streams-directory", 
+  new ResourceTemplate("zulip://streams?include_archived={include_archived}", { list: undefined }),
   async (uri, { include_archived }) => {
     try {
       const result = await zulipClient.getSubscriptions(false);
-      const channels = include_archived 
+      const streams = include_archived 
         ? result.subscriptions 
         : result.subscriptions.filter(stream => !stream.is_archived);
       
@@ -170,7 +170,7 @@ server.resource(
         contents: [{
           uri: uri.href,
           text: JSON.stringify({
-            channels: channels.map(stream => ({
+            streams: streams.map(stream => ({
               id: stream.stream_id,
               name: stream.name,
               description: stream.description,
@@ -185,7 +185,7 @@ server.resource(
       return {
         contents: [{
           uri: uri.href,
-          text: `Error fetching channels: ${error instanceof Error ? error.message : 'Unknown error'}`
+          text: `Error fetching streams: ${error instanceof Error ? error.message : 'Unknown error'}`
         }]
       };
     }
@@ -222,13 +222,13 @@ server.resource(
 #### Wildcard Mentions
 - \`@**all**\` - Mentions all users in organization
 - \`@**everyone**\` - Mentions all users in organization
-- \`@**channel**\` - Mentions all subscribers to current channel
+- \`@**stream**\` - Mentions all subscribers to current stream
 - \`@**topic**\` - Mentions all participants in current topic
 
-### Channel and Topic Links
-- \`#**channelname**\` - Link to channel
-- \`#**channelname>topicname**\` - Link to specific topic
-- \`#**channelname>topicname@messageID**\` - Link to specific message
+### Stream and Topic Links
+- \`#**streamname**\` - Link to stream
+- \`#**streamname>topicname**\` - Link to specific topic
+- \`#**streamname>topicname@messageID**\` - Link to specific message
 
 ### Code Blocks
 \`\`\`python
@@ -271,12 +271,15 @@ server.resource(
       uri: uri.href,
       text: `# Common Zulip MCP Usage Patterns for LLMs
 
+## Zulip Terminology Note
+**Streams = Channels**: In Zulip, "streams" and "channels" refer to the same thing - conversation spaces for teams. This server uses "stream" to match Zulip's official terminology, but if you're familiar with Slack/Discord "channels", they're identical concepts.
+
 ## Getting Started Workflow
-1. **Always start with**: \`get-started\` - Tests connection and shows available channels
+1. **Always start with**: \`get-started\` - Tests connection and shows available streams
 2. **For user discovery**: \`search-users\` to explore users by name/email
 3. **For exact user lookup**: \`get-user-by-email\` when you have their email
 4. **For detailed user info**: \`get-user\` when you have their user ID
-5. **Before sending to channels**: \`get-subscribed-channels\` to see exact channel names
+5. **Before sending to streams**: \`get-subscribed-streams\` to see exact stream names
 
 ## Sending Direct Messages
 \`\`\`
@@ -284,17 +287,17 @@ Step 1: search-users with query="John Doe"
 Step 2: send-message with type="direct", to="john.doe@example.com", content="Hello!"
 \`\`\`
 
-## Sending to Channels
+## Sending to Streams
 \`\`\`
-Step 1: get-subscribed-channels (to see exact names)
+Step 1: get-subscribed-streams (to see exact names)
 Step 2: send-message with type="stream", to="general", topic="Hello", content="Hi everyone!"
 \`\`\`
 
 ## Common Mistakes to Avoid
 - ❌ Using display names for DMs (use emails from search-users)
-- ❌ Wrong case for channel names (they're case-sensitive)
-- ❌ Forgetting topic for channel messages (always required)
-- ❌ Assuming channel/user exists (always search first)
+- ❌ Wrong case for stream names (they're case-sensitive)
+- ❌ Forgetting topic for stream messages (always required)
+- ❌ Assuming stream/user exists (always search first)
 
 ## Tool Selection Guide
 **User Tools - When to use which:**
@@ -308,15 +311,15 @@ Step 2: send-message with type="stream", to="general", topic="Hello", content="H
 
 ## Debugging Tips
 - "User not found" → You used a name instead of email address, try search-users first
-- "Channel not found" → Check exact spelling with get-subscribed-channels
-- "Topic required" → You forgot to include topic for channel messages
+- "Stream not found" → Check exact spelling with get-subscribed-streams
+- "Topic required" → You forgot to include topic for stream messages
 - "Invalid email" → Use actual email addresses, not display names
 
 ## Best Practices
 - Always use helper tools (search-users, get-started) before main actions
 - Test connection with get-started if other tools fail
 - Use exact values returned by search/list tools
-- Include descriptive topics for channel messages`
+- Include descriptive topics for stream messages`
     }]
   })
 );
@@ -366,7 +369,7 @@ server.tool(
 // Quick connection test and orientation tool
 server.tool(
   "get-started",
-  "🚀 START HERE: Test connection and get workspace overview. Use this first to verify everything is working and see available channels. Perfect for orientation and troubleshooting.",
+  "🚀 START HERE: Test connection and get workspace overview. Use this first to verify everything is working and see available streams. Perfect for orientation and troubleshooting.",
   {},
   async () => {
     try {
@@ -379,14 +382,15 @@ server.tool(
         status: "✅ Connected to Zulip",
         your_email: process.env.ZULIP_EMAIL,
         zulip_url: process.env.ZULIP_URL,
-        channels_available: channels.subscriptions?.length || 0,
-        sample_channels: channels.subscriptions?.slice(0, 5).map((c: any) => c.name) || [],
+        streams_available: channels.subscriptions?.length || 0,
+        sample_streams: channels.subscriptions?.slice(0, 5).map((c: any) => c.name) || [],
         recent_activity: recentMessages.messages?.length > 0,
         quick_tips: [
           "Use 'search-users' to find users before sending DMs",
-          "Channel names are case-sensitive - use exact names from get-subscribed-channels",
-          "Always include 'topic' when sending to channels",
-          "For DMs, use actual email addresses (not display names)"
+          "Stream names are case-sensitive - use exact names from get-subscribed-streams",
+          "Always include 'topic' when sending to streams",
+          "For DMs, use actual email addresses (not display names)",
+          "Note: 'streams' and 'channels' mean the same thing in Zulip"
         ]
       };
       
@@ -399,12 +403,12 @@ server.tool(
 
 server.tool(
   "send-message",
-  "💬 SEND MESSAGE: Send a message to a Zulip channel or direct message to users. IMPORTANT: For channels use exact names from 'get-subscribed-channels'. For DMs use actual email addresses from 'search-users' tool (NOT display names). Always include 'topic' for channel messages.",
+  "💬 SEND MESSAGE: Send a message to a Zulip stream (channel) or direct message to users. IMPORTANT: For streams use exact names from 'get-subscribed-streams'. For DMs use actual email addresses from 'search-users' tool (NOT display names). Always include 'topic' for stream messages.",
   SendMessageSchema.shape,
   async ({ type, to, content, topic }) => {
     try {
       if (type === 'stream' && !topic) {
-        return createErrorResponse('Topic is required for channel messages. Think of it as a subject line for your message.');
+        return createErrorResponse('Topic is required for stream messages. Think of it as a subject line for your message.');
       }
 
       if (type === 'direct') {
@@ -575,8 +579,8 @@ server.tool(
 );
 
 server.tool(
-  "get-topics-in-channel",
-  "💬 CHANNEL TOPICS: Get all recent topics (conversation threads) in a specific channel. Use this to browse what's being discussed in a channel.",
+  "get-topics-in-stream",
+  "💬 STREAM TOPICS: Get all recent topics (conversation threads) in a specific stream (channel). Use this to browse what's being discussed in a stream.",
   GetStreamTopicsSchema.shape,
   async ({ stream_id }) => {
     try {
@@ -750,8 +754,8 @@ server.tool(
 );
 
 server.tool(
-  "get-subscribed-channels",
-  "📺 USER CHANNELS: Get all channels you're subscribed to. Use this to see what channels are available before sending messages. Note: Zulip API uses 'stream' internally, but they're the same as channels.",
+  "get-subscribed-streams",
+  "📺 USER STREAMS: Get all streams you're subscribed to. Use this to see what streams are available before sending messages. Note: In Zulip, 'streams' and 'channels' refer to the same thing - conversation spaces for teams.",
   GetSubscribedChannelsSchema.shape,
   async ({ include_subscribers }) => {
     try {
@@ -768,14 +772,14 @@ server.tool(
         }))
       }, null, 2));
     } catch (error) {
-      return createErrorResponse(`Error getting subscribed channels: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      return createErrorResponse(`Error getting subscribed streams: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 );
 
 server.tool(
-  "get-channel-id",
-  "🔢 CHANNEL ID LOOKUP: Get the numeric ID of a channel when you know its name. Use this to get the channel ID needed for other operations.",
+  "get-stream-id",
+  "🔢 STREAM ID LOOKUP: Get the numeric ID of a stream (channel) when you know its name. Use this to get the stream ID needed for other operations.",
   GetChannelIdSchema.shape,
   async ({ stream_name }) => {
     try {
@@ -785,14 +789,14 @@ server.tool(
         stream_id: result.stream_id
       }, null, 2));
     } catch (error) {
-      return createErrorResponse(`Error getting channel ID: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      return createErrorResponse(`Error getting stream ID: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 );
 
 server.tool(
-  "get-channel-by-id",
-  "📊 CHANNEL DETAILS: Get comprehensive information about a channel when you have its numeric ID. Returns channel settings, description, subscriber count, etc.",
+  "get-stream-by-id",
+  "📊 STREAM DETAILS: Get comprehensive information about a stream (channel) when you have its numeric ID. Returns stream settings, description, subscriber count, etc.",
   GetChannelByIdSchema.shape,
   async ({ stream_id, include_subscribers }) => {
     try {
@@ -810,7 +814,7 @@ server.tool(
         }
       }, null, 2));
     } catch (error) {
-      return createErrorResponse(`Error getting channel by ID: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      return createErrorResponse(`Error getting stream by ID: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   }
 );
