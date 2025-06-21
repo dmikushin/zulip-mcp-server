@@ -19,39 +19,6 @@ function debugLog(message: string, ...args: any[]) {
   }
 }
 
-/**
- * Utility to create form-encoded request configuration
- */
-function createFormEncodedConfig(data: any) {
-  return {
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    transformRequest: [(requestData: any) => {
-      const params = new URLSearchParams();
-      Object.keys(requestData).forEach(key => {
-        params.append(key, requestData[key]);
-      });
-      return params.toString();
-    }]
-  };
-}
-
-/**
- * Utility to create form-encoded config for array data (like drafts)
- */
-function createFormEncodedArrayConfig(arrayData: any[], arrayKey: string) {
-  return {
-    headers: {
-      'Content-Type': 'application/x-www-form-urlencoded'
-    },
-    transformRequest: [() => {
-      const params = new URLSearchParams();
-      params.append(arrayKey, JSON.stringify(arrayData));
-      return params.toString();
-    }]
-  };
-}
 // Removed logger import - using console for debugging in development mode
 
 export class ZulipClient {
@@ -220,7 +187,7 @@ export class ZulipClient {
   }): Promise<void> {
     // Filter out undefined values
     const filteredParams = Object.fromEntries(
-      Object.entries(params).filter(([_, value]) => value !== undefined)
+      Object.entries(params).filter(([, value]) => value !== undefined)
     );
     await this.client.patch(`/messages/${messageId}`, filteredParams);
   }
@@ -251,8 +218,8 @@ export class ZulipClient {
   }): Promise<void> {
     const queryParams = new URLSearchParams();
     queryParams.append('emoji_name', params.emoji_name);
-    if (params.emoji_code) queryParams.append('emoji_code', params.emoji_code);
-    if (params.reaction_type) queryParams.append('reaction_type', params.reaction_type);
+    if (params.emoji_code) {queryParams.append('emoji_code', params.emoji_code);}
+    if (params.reaction_type) {queryParams.append('reaction_type', params.reaction_type);}
     
     await this.client.delete(`/messages/${messageId}/reactions?${queryParams.toString()}`);
   }
@@ -335,7 +302,7 @@ export class ZulipClient {
   }): Promise<void> {
     // Filter out undefined values
     const filteredParams = Object.fromEntries(
-      Object.entries(params).filter(([_, value]) => value !== undefined)
+      Object.entries(params).filter(([, value]) => value !== undefined)
     );
     await this.client.patch(`/scheduled_messages/${scheduledMessageId}`, filteredParams);
   }
@@ -410,7 +377,7 @@ export class ZulipClient {
   } = {}): Promise<{ members: ZulipUser[] }> {
     // Filter out undefined values
     const filteredParams = Object.fromEntries(
-      Object.entries(params).filter(([_, value]) => value !== undefined)
+      Object.entries(params).filter(([, value]) => value !== undefined)
     );
     const response = await this.client.get('/users', { params: filteredParams });
     return response.data;
@@ -422,7 +389,7 @@ export class ZulipClient {
   } = {}): Promise<{ user: ZulipUser }> {
     // Filter out undefined values
     const filteredParams = Object.fromEntries(
-      Object.entries(params).filter(([_, value]) => value !== undefined)
+      Object.entries(params).filter(([, value]) => value !== undefined)
     );
     const response = await this.client.get(`/users/${encodeURIComponent(email)}`, { params: filteredParams });
     return response.data;
@@ -440,7 +407,7 @@ export class ZulipClient {
     if (params.status_text !== undefined && params.status_text !== null) {
       filteredParams.status_text = params.status_text;
     }
-    if (params.away !== undefined) filteredParams.away = params.away;
+    if (params.away !== undefined) {filteredParams.away = params.away;}
     if (params.emoji_name !== undefined && params.emoji_name !== '') {
       filteredParams.emoji_name = params.emoji_name;
     }
@@ -519,7 +486,7 @@ export class ZulipClient {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded'
       },
-      transformRequest: [(data) => {
+      transformRequest: [() => {
         const params = new URLSearchParams();
         params.append('drafts', JSON.stringify(payload));
         return params.toString();
