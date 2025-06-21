@@ -10,7 +10,12 @@
     "start": "node dist/server.js",
     "test": "jest",
     "lint": "eslint src/**/*.ts",
-    "typecheck": "tsc --noEmit"
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "typecheck": "tsc --noEmit",
+    "precommit": "npm run lint && npm run typecheck && npm run build",
+    "prepare": "npm run build",
+    "audit:fix": "npm audit fix",
+    "quality": "npm run lint && npm run typecheck && npm run test && npm audit"
   },
   "keywords": [
     "mcp",
