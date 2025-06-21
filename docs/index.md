@@ -5,7 +5,11 @@ description: "Model Context Protocol server for Zulip API integration with LLMs"
 
 # Zulip MCP Server
 
-A comprehensive **Model Context Protocol (MCP)** server that bridges LLMs with Zulip workspaces, providing 25 powerful tools and 4 contextual resources for seamless chat integration.
+A comprehensive **Model Context Protocol (MCP)** server that bridges LLMs with Zulip workspaces, providing **25 powerful tools** and **4 contextual resources** for seamless chat integration.
+
+```
+🤖 AI + 💬 Zulip = 🚀 Powerful Automation
+```
 
 ## 📚 Documentation Navigation
 
@@ -24,24 +28,24 @@ A comprehensive **Model Context Protocol (MCP)** server that bridges LLMs with Z
 
 Get started in 3 simple steps:
 
-1. **Install and Configure**
-   ```bash
-   git clone https://github.com/avisekrath/zulip-mcp-server.git
-   cd zulip-mcp-server
-   npm install && npm run build
-   ```
+### 1. Install and Configure
+```bash
+git clone https://github.com/avisekrath/zulip-mcp-server.git
+cd zulip-mcp-server
+npm install && npm run build
+```
 
-2. **Set Environment Variables**
-   ```bash
-   export ZULIP_URL="https://your-org.zulipchat.com"
-   export ZULIP_EMAIL="your-bot@example.com"
-   export ZULIP_API_KEY="your-api-key"
-   ```
+### 2. Set Environment Variables
+```bash
+export ZULIP_URL="https://your-org.zulipchat.com"
+export ZULIP_EMAIL="your-bot@example.com"
+export ZULIP_API_KEY="your-api-key"
+```
 
-3. **Connect to Your LLM Client**
-   - [Claude Desktop Configuration](/configuration#claude-desktop)
-   - [Cursor IDE Setup](/configuration#cursor-ide)
-   - [Raycast Integration](/configuration#raycast)
+### 3. Connect to Your LLM Client
+- **[Claude Desktop Configuration](configuration#claude-desktop)**
+- **[Cursor IDE Setup](configuration#cursor-ide)**
+- **[Raycast Integration](configuration#raycast)**
 
 ## ✨ What You Can Do
 
@@ -81,16 +85,20 @@ This server uses "stream" to match Zulip's official documentation.
 
 ## 🔧 **Features Overview**
 
-| Category | Tools Available | Description |
-|----------|----------------|-------------|
-| **Helper Tools** | 2 tools | Discovery and orientation for LLMs |
-| **Messages** | 10 tools | Send, retrieve, edit, schedule, react |
-| **Users** | 5 tools | Search, profiles, status management |
-| **Streams** | 4 tools | Browse, manage, get details |
-| **Drafts & Files** | 4 tools | Draft management and file uploads |
-| **Resources** | 4 resources | Contextual data for better LLM responses |
+```
+┌─────────────────┬───────────────────┬──────────────────────────────────┐
+│ Category        │ Tools Available   │ Description                      │
+├─────────────────┼───────────────────┼──────────────────────────────────┤
+│ Helper Tools    │ 2 tools          │ Discovery and orientation        │
+│ Messages        │ 10 tools         │ Send, retrieve, edit, schedule   │
+│ Users           │ 5 tools          │ Search, profiles, status mgmt    │
+│ Streams         │ 4 tools          │ Browse, manage, get details      │
+│ Drafts & Files  │ 4 tools          │ Draft management and uploads     │
+│ Resources       │ 4 resources      │ Contextual data for LLMs         │
+└─────────────────┴───────────────────┴──────────────────────────────────┘
+```
 
-**Total: 25 Tools + 4 Resources**
+**Total: `25 Tools + 4 Resources`**
 
 ## 🎯 **Use Cases**
 
@@ -134,12 +142,21 @@ This server uses "stream" to match Zulip's official documentation.
 - **Production-Ready**: TypeScript implementation with robust error handling
 - **Active Development**: Regular updates and community-driven improvements
 
-## 📈 **Version Information**
+## 📈 **Project Statistics**
 
-- **Current Version**: v1.5.0
-- **MCP Protocol**: v1.0.0 compatible
-- **Node.js**: 18+ required
-- **TypeScript**: 5+ supported
+```
+╭─────────────────────────────────────────────╮
+│                 Project Info                │
+├─────────────────────────────────────────────┤
+│ Current Version    │ v1.5.0                 │
+│ MCP Protocol       │ v1.0.0 compatible      │
+│ Node.js Required   │ 18+ LTS                │
+│ TypeScript         │ 5+ supported           │
+│ Total Tools        │ 25 MCP tools           │
+│ Resources          │ 4 contextual resources │
+│ Supported Clients  │ Claude, Cursor, Raycast│
+╰─────────────────────────────────────────────╯
+```
 
 ## 🤝 **Community & Support**
 

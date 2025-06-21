@@ -2,12 +2,17 @@
 title: "Zulip MCP Server"
 description: "Model Context Protocol server for Zulip API integration with LLMs"
 
+# Hacker theme configuration
+remote_theme: pages-themes/hacker@v0.2.0
+show_downloads: true
+
 # GitHub Pages settings
 markdown: kramdown
 highlighter: rouge
 
-# Only GitHub Pages approved plugins
+# GitHub Pages approved plugins
 plugins:
+  - jekyll-remote-theme
   - jekyll-sitemap
   - jekyll-seo-tag
 
