@@ -235,15 +235,15 @@ export const EditDraftSchema = z.object({
   timestamp: z.number().optional().describe("Updated timestamp")
 });
 
-export const GetSubscribedChannelsSchema = z.object({
-  include_subscribers: z.boolean().optional().describe("Include subscriber lists for channels")
+export const GetSubscribedStreamsSchema = z.object({
+  include_subscribers: z.boolean().optional().describe("Include subscriber lists for streams")
 });
 
-export const GetChannelIdSchema = z.object({
-  stream_name: z.string().describe("Name of the channel to get ID for")
+export const GetStreamIdSchema = z.object({
+  stream_name: z.string().describe("Name of the stream to get ID for")
 });
 
-export const GetChannelByIdSchema = z.object({
+export const GetStreamByIdSchema = z.object({
   stream_id: z.number().describe("Unique stream ID to get details for"),
   include_subscribers: z.boolean().optional().describe("Include subscriber list")
 });
@@ -267,6 +267,6 @@ export type GetStreamTopicsParams = z.infer<typeof GetStreamTopicsSchema>;
 export type GetMessageReadReceiptsParams = z.infer<typeof GetMessageReadReceiptsSchema>;
 export type EditScheduledMessageParams = z.infer<typeof EditScheduledMessageSchema>;
 export type EditDraftParams = z.infer<typeof EditDraftSchema>;
-export type GetSubscribedChannelsParams = z.infer<typeof GetSubscribedChannelsSchema>;
-export type GetChannelIdParams = z.infer<typeof GetChannelIdSchema>;
-export type GetChannelByIdParams = z.infer<typeof GetChannelByIdSchema>;
+export type GetSubscribedStreamsParams = z.infer<typeof GetSubscribedStreamsSchema>;
+export type GetStreamIdParams = z.infer<typeof GetStreamIdSchema>;
+export type GetStreamByIdParams = z.infer<typeof GetStreamByIdSchema>;

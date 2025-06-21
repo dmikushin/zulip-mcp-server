@@ -31,9 +31,9 @@ import {
   ListStreamsSchema,
   DeleteMessageSchema,
   GetStreamTopicsSchema,
-  GetSubscribedChannelsSchema,
-  GetChannelIdSchema,
-  GetChannelByIdSchema
+  GetSubscribedStreamsSchema,
+  GetStreamIdSchema,
+  GetStreamByIdSchema
 } from "./types.js";
 
 /**
@@ -373,7 +373,7 @@ server.tool(
   {},
   async () => {
     try {
-      const [channels, recentMessages] = await Promise.all([
+      const [streams, recentMessages] = await Promise.all([
         zulipClient.getSubscriptions().catch(() => ({ subscriptions: [] })),
         zulipClient.getMessages({ anchor: "newest", num_before: 3 }).catch(() => ({ messages: [] }))
       ]);
@@ -382,8 +382,8 @@ server.tool(
         status: "✅ Connected to Zulip",
         your_email: process.env.ZULIP_EMAIL,
         zulip_url: process.env.ZULIP_URL,
-        streams_available: channels.subscriptions?.length || 0,
-        sample_streams: channels.subscriptions?.slice(0, 5).map((c: any) => c.name) || [],
+        streams_available: streams.subscriptions?.length || 0,
+        sample_streams: streams.subscriptions?.slice(0, 5).map((s: any) => s.name) || [],
         recent_activity: recentMessages.messages?.length > 0,
         quick_tips: [
           "Use 'search-users' to find users before sending DMs",
@@ -756,7 +756,7 @@ server.tool(
 server.tool(
   "get-subscribed-streams",
   "📺 USER STREAMS: Get all streams you're subscribed to. Use this to see what streams are available before sending messages. Note: In Zulip, 'streams' and 'channels' refer to the same thing - conversation spaces for teams.",
-  GetSubscribedChannelsSchema.shape,
+  GetSubscribedStreamsSchema.shape,
   async ({ include_subscribers }) => {
     try {
       const result = await zulipClient.getSubscriptions(include_subscribers);
@@ -780,7 +780,7 @@ server.tool(
 server.tool(
   "get-stream-id",
   "🔢 STREAM ID LOOKUP: Get the numeric ID of a stream (channel) when you know its name. Use this to get the stream ID needed for other operations.",
-  GetChannelIdSchema.shape,
+  GetStreamIdSchema.shape,
   async ({ stream_name }) => {
     try {
       const result = await zulipClient.getStreamId(stream_name);
@@ -797,7 +797,7 @@ server.tool(
 server.tool(
   "get-stream-by-id",
   "📊 STREAM DETAILS: Get comprehensive information about a stream (channel) when you have its numeric ID. Returns stream settings, description, subscriber count, etc.",
-  GetChannelByIdSchema.shape,
+  GetStreamByIdSchema.shape,
   async ({ stream_id, include_subscribers }) => {
     try {
       const result = await zulipClient.getStream(stream_id, include_subscribers);
