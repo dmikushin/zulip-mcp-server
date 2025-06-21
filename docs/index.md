@@ -85,18 +85,14 @@ This server uses "stream" to match Zulip's official documentation.
 
 ## 🔧 **Features Overview**
 
-```
-┌─────────────────┬───────────────────┬──────────────────────────────────┐
-│ Category        │ Tools Available   │ Description                      │
-├─────────────────┼───────────────────┼──────────────────────────────────┤
-│ Helper Tools    │ 2 tools          │ Discovery and orientation        │
-│ Messages        │ 10 tools         │ Send, retrieve, edit, schedule   │
-│ Users           │ 5 tools          │ Search, profiles, status mgmt    │
-│ Streams         │ 4 tools          │ Browse, manage, get details      │
-│ Drafts & Files  │ 4 tools          │ Draft management and uploads     │
-│ Resources       │ 4 resources      │ Contextual data for LLMs         │
-└─────────────────┴───────────────────┴──────────────────────────────────┘
-```
+| Category | Tools Available | Description |
+|----------|----------------|-------------|
+| **Helper Tools** | 2 tools | Discovery and orientation for LLMs |
+| **Messages** | 10 tools | Send, retrieve, edit, schedule, react |
+| **Users** | 5 tools | Search, profiles, status management |
+| **Streams** | 4 tools | Browse, manage, get details |
+| **Drafts & Files** | 4 tools | Draft management and file uploads |
+| **Resources** | 4 resources | Contextual data for better LLM responses |
 
 **Total: `25 Tools + 4 Resources`**
 
@@ -144,19 +140,15 @@ This server uses "stream" to match Zulip's official documentation.
 
 ## 📈 **Project Statistics**
 
-```
-╭─────────────────────────────────────────────╮
-│                 Project Info                │
-├─────────────────────────────────────────────┤
-│ Current Version    │ v1.5.0                 │
-│ MCP Protocol       │ v1.0.0 compatible      │
-│ Node.js Required   │ 18+ LTS                │
-│ TypeScript         │ 5+ supported           │
-│ Total Tools        │ 25 MCP tools           │
-│ Resources          │ 4 contextual resources │
-│ Supported Clients  │ Claude, Cursor, Raycast│
-╰─────────────────────────────────────────────╯
-```
+| Metric | Value |
+|--------|-------|
+| **Current Version** | v1.5.0 |
+| **MCP Protocol** | v1.0.0 compatible |
+| **Node.js Required** | 18+ LTS |
+| **TypeScript** | 5+ supported |
+| **Total Tools** | 25 MCP tools |
+| **Resources** | 4 contextual resources |
+| **Supported Clients** | Claude, Cursor, Raycast |
 
 ## 🤝 **Community & Support**
 
