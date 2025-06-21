@@ -56,7 +56,7 @@ src/
 The server is implemented as a single file (`server.ts`) that:
 
 1. **Environment Setup**: Validates required environment variables with helpful error messages
-2. **Resource Registration**: Provides contextual data (user directory, channels, formatting guide, common patterns)
+2. **Resource Registration**: Provides contextual data (user directory, streams, formatting guide, common patterns)
 3. **Tool Registration**: Implements Zulip API operations as MCP tools
 4. **Transport**: Uses StdioServerTransport for CLI integration
 
@@ -96,7 +96,7 @@ The server automatically loads `.env` files and provides detailed error messages
 - `get-started` - Test connection and get workspace overview
 
 **Message Operations**:
-- `send-message` - Send to channels or direct messages
+- `send-message` - Send to streams or direct messages
 - `get-messages` - Retrieve message history with filtering
 - `edit-message` - Modify existing messages  
 - `delete-message` - Remove messages
@@ -104,11 +104,11 @@ The server automatically loads `.env` files and provides detailed error messages
 - `get-message` - Get specific message details
 - `get-message-read-receipts` - Check who read messages
 
-**Channel/Stream Management**:
-- `get-subscribed-channels` - List user's subscriptions
-- `get-channel-id` - Get channel ID by name
-- `get-channel-by-id` - Detailed channel information
-- `get-topics-in-channel` - Browse recent topics
+**Stream Management**:
+- `get-subscribed-streams` - List user's subscriptions
+- `get-stream-id` - Get stream ID by name
+- `get-stream-by-id` - Detailed stream information
+- `get-topics-in-stream` - Browse recent topics
 
 **User Operations**:
 - `get-users` - List organization members
@@ -124,7 +124,7 @@ The server automatically loads `.env` files and provides detailed error messages
 
 **MCP Resources Available**:
 - `users-directory` (zulip://users) - Browse organization members
-- `channels-directory` (zulip://channels) - Explore available channels
+- `streams-directory` (zulip://streams) - Explore available streams
 - `message-formatting-guide` (zulip://formatting/guide) - Markdown syntax reference
 - `common-patterns` (zulip://patterns/common) - LLM usage workflows and troubleshooting
 
@@ -163,14 +163,36 @@ server.tool(
 ### Enhanced Error Messages (in zulip/client.ts)
 The Zulip client provides contextual error guidance:
 - "User not found" → Points to `search-users` tool
-- "Channel not found" → Points to `get-subscribed-channels`
+- "Stream not found" → Points to `get-subscribed-streams`
 - "Invalid email" → Explains to use actual emails, not display names
 
-## LLM Usability Features
+## LLM Usability Features & Tool Workflows
 
-**Discovery Workflow**: `get-started` → `search-users` → `send-message`
-**Common Patterns Resource**: Step-by-step examples for typical workflows
-**Helpful Tool Descriptions**: Clear guidance on email vs display names, case sensitivity, required fields
+### **Recommended Workflows**
+**Discovery**: `get-started` → `search-users` → `send-message`
+**User Lookup**: `search-users` (explore) → `get-user-by-email` (exact) → `get-user` (detailed)
+**Messages**: `get-messages` (bulk/search) → `get-message` (detailed analysis)
+**Streams**: `get-subscribed-streams` → `get-stream-id` → `get-topics-in-stream`
+
+### **Tool Selection Guide**
+**When to use each user tool:**
+- 🔍 `search-users` - Don't know exact details, want to explore users
+- 📧 `get-user-by-email` - Have exact email, need profile details  
+- 🆔 `get-user` - Have user ID from search, need complete information
+
+**When to use each message tool:**
+- 📋 `get-messages` - Browse conversations, search content, get history
+- 🔍 `get-message` - Analyze one specific message, check edit history
+
+## Zulip Terminology: Streams vs Channels
+
+**Streams = Channels**: In Zulip, "streams" and "channels" refer to the same concept - conversation spaces for teams. This MCP server uses "stream" to match Zulip's official terminology:
+
+- **Stream** = Official Zulip terminology (used in API, tools, interface)
+- **Channel** = Common term from Slack/Discord/Teams
+- **Same thing** = Conversation spaces where teams discuss topics
+
+If you're familiar with Slack/Discord "channels", Zulip "streams" work identically.
 
 ## Testing & Quality
 
