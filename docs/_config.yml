@@ -1,0 +1,27 @@
+# GitHub Pages Configuration
+title: "Zulip MCP Server"
+description: "Model Context Protocol server for Zulip API integration with LLMs"
+
+# GitHub Pages settings
+markdown: kramdown
+highlighter: rouge
+
+# Only GitHub Pages approved plugins
+plugins:
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Basic settings
+author: "Clarisights"
+github_username: "avisekrath"
+repository: "avisekrath/zulip-mcp-server"
+
+# Exclude files from processing
+exclude:
+  - README.md
+  - package.json
+  - package-lock.json
+  - node_modules
+  - src
+  - dist
+  - tsconfig.json
