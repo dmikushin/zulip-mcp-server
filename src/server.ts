@@ -114,7 +114,7 @@ const zulipClient = new ZulipClient(config);
 // Create MCP server
 const server = new McpServer({
   name: "zulip-mcp-server",
-  version: "1.0.0"
+  version: "1.5.0"
 });
 
 // Register Resources
