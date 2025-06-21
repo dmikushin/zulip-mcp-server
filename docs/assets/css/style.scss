@@ -1,0 +1,137 @@
+---
+---
+
+@import "{{ site.theme }}";
+
+/* Custom color scheme for softer, eye-friendly appearance */
+:root {
+  --bg-primary: #2E2E2E;        /* Your preferred soft dark gray */
+  --bg-secondary: #3A3A3A;      /* Slightly lighter for contrast */
+  --text-primary: #E8E8E8;      /* Soft light gray for main text */
+  --text-secondary: #C0C0C0;    /* Medium gray for secondary text */
+  --accent-primary: #8B5A6B;    /* Muted burgundy (inspired by Merlot) */
+  --accent-secondary: #A67C8A;  /* Lighter burgundy for links */
+  --code-bg: #3A3A3A;          /* Soft dark for code blocks */
+  --border-color: #4A4A4A;     /* Subtle borders */
+}
+
+/* Override the harsh black background */
+body {
+  background-color: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Header styling with softer colors */
+header {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-primary) 100%) !important;
+}
+
+/* Replace the bright green with muted burgundy */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--accent-primary) !important;
+}
+
+/* Softer link colors instead of bright green */
+a {
+  color: var(--accent-secondary) !important;
+}
+
+a:hover {
+  color: var(--accent-primary) !important;
+  text-decoration: underline;
+}
+
+/* Code blocks with softer background */
+pre {
+  background-color: var(--code-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  border-radius: 4px;
+}
+
+code {
+  background-color: var(--code-bg) !important;
+  color: var(--text-primary) !important;
+  padding: 2px 4px;
+  border-radius: 3px;
+}
+
+/* Table styling for better readability */
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 1rem 0;
+}
+
+th, td {
+  border: 1px solid var(--border-color);
+  padding: 8px 12px;
+  text-align: left;
+}
+
+th {
+  background-color: var(--bg-secondary);
+  color: var(--accent-primary);
+  font-weight: bold;
+}
+
+/* Blockquote styling */
+blockquote {
+  border-left: 4px solid var(--accent-primary);
+  background-color: var(--bg-secondary);
+  margin: 1rem 0;
+  padding: 1rem;
+  border-radius: 0 4px 4px 0;
+}
+
+/* Download buttons with softer styling */
+.btn {
+  background-color: var(--accent-primary) !important;
+  border: 1px solid var(--accent-secondary) !important;
+  color: var(--text-primary) !important;
+  text-decoration: none !important;
+  padding: 8px 16px;
+  border-radius: 4px;
+  display: inline-block;
+  margin: 4px;
+  transition: all 0.2s ease;
+}
+
+.btn:hover {
+  background-color: var(--accent-secondary) !important;
+  transform: translateY(-1px);
+}
+
+/* Navigation and inline text styling */
+strong, b {
+  color: var(--text-primary);
+  font-weight: bold;
+}
+
+/* Horizontal rules */
+hr {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 2rem 0;
+}
+
+/* Syntax highlighting adjustments */
+.highlight {
+  background: var(--code-bg) !important;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+}
+
+/* Make the bright green syntax highlighting softer */
+.highlight .nf { color: var(--accent-secondary) !important; } /* Function names */
+.highlight .s { color: #A8CBA8 !important; }  /* Strings - soft green */
+.highlight .k { color: var(--accent-primary) !important; }   /* Keywords */
+.highlight .c { color: var(--text-secondary) !important; }   /* Comments */
+.highlight .nb { color: #98B4D1 !important; }  /* Built-ins - soft blue */
+
+/* ASCII art and monospace improvements */
+pre code {
+  background: none !important;
+  color: var(--text-primary) !important;
+  font-family: 'Courier New', Courier, monospace;
+  line-height: 1.2;
+}
