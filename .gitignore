@@ -112,3 +112,18 @@ $RECYCLE.BIN/
 .fuse_hidden*
 .directory
 .Trash-*
+
+# Jekyll/GitHub Pages artifacts
+docs/_site/
+docs/.sass-cache/
+docs/.jekyll-cache/
+docs/.jekyll-metadata
+docs/Gemfile.lock
+
+# Obsidian note-taking app artifacts
+.obsidian/
+*.obsidian/
+
+# Screenshots and temporary images
+screenshot-*.png
+*-screenshot.png
