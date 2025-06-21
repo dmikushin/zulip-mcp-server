@@ -272,9 +272,11 @@ server.resource(
       text: `# Common Zulip MCP Usage Patterns for LLMs
 
 ## Getting Started Workflow
-1. **Always start with**: \`get-started\` - This tests connection and shows available channels
-2. **Before sending DMs**: \`search-users\` with the person's name to get their email
-3. **Before sending to channels**: \`get-subscribed-channels\` to see exact channel names
+1. **Always start with**: \`get-started\` - Tests connection and shows available channels
+2. **For user discovery**: \`search-users\` to explore users by name/email
+3. **For exact user lookup**: \`get-user-by-email\` when you have their email
+4. **For detailed user info**: \`get-user\` when you have their user ID
+5. **Before sending to channels**: \`get-subscribed-channels\` to see exact channel names
 
 ## Sending Direct Messages
 \`\`\`
@@ -294,10 +296,20 @@ Step 2: send-message with type="stream", to="general", topic="Hello", content="H
 - ❌ Forgetting topic for channel messages (always required)
 - ❌ Assuming channel/user exists (always search first)
 
+## Tool Selection Guide
+**User Tools - When to use which:**
+- 🔍 \`search-users\` → Exploring, don't know exact details, want multiple options
+- 📧 \`get-user-by-email\` → Have exact email, need profile information  
+- 🆔 \`get-user\` → Have user ID from search results, need complete details
+
+**Message Tools - When to use which:**
+- 📋 \`get-messages\` → Browse conversations, search content, get message history
+- 🔍 \`get-message\` → Analyze one specific message, check reactions/edit history
+
 ## Debugging Tips
-- "User not found" → You used a name instead of email address
+- "User not found" → You used a name instead of email address, try search-users first
 - "Channel not found" → Check exact spelling with get-subscribed-channels
-- "Topic required" → You forgot to include topic for stream messages
+- "Topic required" → You forgot to include topic for channel messages
 - "Invalid email" → Use actual email addresses, not display names
 
 ## Best Practices
@@ -314,7 +326,7 @@ Step 2: send-message with type="stream", to="general", topic="Hello", content="H
 // Helper tool for finding users - makes LLM usage much easier
 server.tool(
   "search-users",
-  "Search for users by name or email. Use this before sending direct messages to get the correct email addresses.",
+  "🔍 DISCOVERY: Search for users by partial name or email when you don't know exact details. Use this first to explore and find users before sending direct messages. Returns multiple matching results with basic info (name, email, ID).",
   {
     query: z.string().describe("Name, email, or partial match to search for users"),
     limit: z.number().default(10).describe("Maximum number of results to return (default: 10)")
@@ -354,7 +366,7 @@ server.tool(
 // Quick connection test and orientation tool
 server.tool(
   "get-started",
-  "Test connection and get basic info about your Zulip instance. Use this first to verify everything is working.",
+  "🚀 START HERE: Test connection and get workspace overview. Use this first to verify everything is working and see available channels. Perfect for orientation and troubleshooting.",
   {},
   async () => {
     try {
@@ -387,12 +399,12 @@ server.tool(
 
 server.tool(
   "send-message",
-  "Send a message to a Zulip channel or direct message to users. IMPORTANT: For channels use exact names from 'get-subscribed-channels'. For DMs use actual email addresses from 'search-users' tool (NOT display names). Always include 'topic' for channel messages.",
+  "💬 SEND MESSAGE: Send a message to a Zulip channel or direct message to users. IMPORTANT: For channels use exact names from 'get-subscribed-channels'. For DMs use actual email addresses from 'search-users' tool (NOT display names). Always include 'topic' for channel messages.",
   SendMessageSchema.shape,
   async ({ type, to, content, topic }) => {
     try {
       if (type === 'stream' && !topic) {
-        return createErrorResponse('Topic is required for stream messages. Think of it as a subject line for your message.');
+        return createErrorResponse('Topic is required for channel messages. Think of it as a subject line for your message.');
       }
 
       if (type === 'direct') {
@@ -413,7 +425,7 @@ server.tool(
 
 server.tool(
   "get-messages",
-  "Retrieve messages from Zulip with advanced filtering options.",
+  "📋 BULK RETRIEVAL: Get multiple messages with filtering, pagination, and search. Use this to browse conversations, search for content, or get message history. Returns array of messages with basic details.",
   GetMessagesSchema.shape,
   async ({ anchor, num_before, num_after, narrow, message_id }) => {
     try {
@@ -446,7 +458,7 @@ server.tool(
 
 server.tool(
   "get-users",
-  "Get all users in the Zulip organization with their profile information.",
+  "👥 ALL USERS: Get complete list of all users in the organization with their profile information. Use this to see everyone at once or when you need the full user directory.",
   ListUsersSchema.shape,
   async ({ client_gravatar, include_custom_profile_fields }) => {
     try {
@@ -530,7 +542,7 @@ server.tool(
 
 server.tool(
   "get-user-by-email",
-  "Find a user by their email address.",
+  "📧 EXACT LOOKUP: Find a user when you have their exact email address. Use this when you know the specific email and need detailed profile information. Returns single user with complete details.",
   GetUserByEmailSchema.shape,
   async ({ email, client_gravatar, include_custom_profile_fields }) => {
     try {
@@ -564,7 +576,7 @@ server.tool(
 
 server.tool(
   "get-topics-in-channel",
-  "Get all topics in a specific stream/channel.",
+  "💬 CHANNEL TOPICS: Get all recent topics (conversation threads) in a specific channel. Use this to browse what's being discussed in a channel.",
   GetStreamTopicsSchema.shape,
   async ({ stream_id }) => {
     try {
@@ -671,7 +683,7 @@ server.tool(
 
 server.tool(
   "create-draft",
-  "Create a new message draft. For user IDs in the 'to' field, use the users-directory resource (zulip://users) or get-users tool to discover available users and their IDs.",
+  "📝 CREATE DRAFT: Save a message as draft for later editing or sending. For user IDs in the 'to' field, use search-users or get-users tool to discover available users and their IDs.",
   CreateDraftSchema.shape,
   async ({ type, to, topic, content, timestamp }) => {
     try {
@@ -739,7 +751,7 @@ server.tool(
 
 server.tool(
   "get-subscribed-channels",
-  "Get channels/streams the user is subscribed to.",
+  "📺 USER CHANNELS: Get all channels you're subscribed to. Use this to see what channels are available before sending messages. Note: Zulip API uses 'stream' internally, but they're the same as channels.",
   GetSubscribedChannelsSchema.shape,
   async ({ include_subscribers }) => {
     try {
@@ -763,7 +775,7 @@ server.tool(
 
 server.tool(
   "get-channel-id",
-  "Get the ID of a channel by its name.",
+  "🔢 CHANNEL ID LOOKUP: Get the numeric ID of a channel when you know its name. Use this to get the channel ID needed for other operations.",
   GetChannelIdSchema.shape,
   async ({ stream_name }) => {
     try {
@@ -780,7 +792,7 @@ server.tool(
 
 server.tool(
   "get-channel-by-id",
-  "Get detailed information about a channel by its ID.",
+  "📊 CHANNEL DETAILS: Get comprehensive information about a channel when you have its numeric ID. Returns channel settings, description, subscriber count, etc.",
   GetChannelByIdSchema.shape,
   async ({ stream_id, include_subscribers }) => {
     try {
@@ -835,7 +847,7 @@ server.tool(
 
 server.tool(
   "get-user",
-  "Get detailed information about a specific user by ID.",
+  "🆔 DETAILED LOOKUP: Get comprehensive user profile when you have their user ID (from search-users results). Returns complete user information including role, timezone, avatar, and custom profile fields.",
   GetUserSchema.shape,
   async ({ user_id, client_gravatar, include_custom_profile_fields }) => {
     try {
@@ -869,7 +881,7 @@ server.tool(
 
 server.tool(
   "get-message",
-  "Get detailed information about a specific message by ID.",
+  "🔍 SINGLE MESSAGE: Get complete details about one specific message when you have its ID. Use this for in-depth analysis, checking edit history, reactions, or metadata. Returns single message with full details.",
   GetMessageSchema.shape,
   async ({ message_id, apply_markdown, allow_empty_topic_name }) => {
     try {

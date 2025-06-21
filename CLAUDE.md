@@ -166,11 +166,25 @@ The Zulip client provides contextual error guidance:
 - "Channel not found" → Points to `get-subscribed-channels`
 - "Invalid email" → Explains to use actual emails, not display names
 
-## LLM Usability Features
+## LLM Usability Features & Tool Workflows
 
-**Discovery Workflow**: `get-started` → `search-users` → `send-message`
-**Common Patterns Resource**: Step-by-step examples for typical workflows
-**Helpful Tool Descriptions**: Clear guidance on email vs display names, case sensitivity, required fields
+### **Recommended Workflows**
+**Discovery**: `get-started` → `search-users` → `send-message`
+**User Lookup**: `search-users` (explore) → `get-user-by-email` (exact) → `get-user` (detailed)
+**Messages**: `get-messages` (bulk/search) → `get-message` (detailed analysis)
+**Channels**: `get-subscribed-channels` → `get-channel-id` → `get-topics-in-channel`
+
+### **Tool Selection Guide**
+**When to use each user tool:**
+- 🔍 `search-users` - Don't know exact details, want to explore users
+- 📧 `get-user-by-email` - Have exact email, need profile details  
+- 🆔 `get-user` - Have user ID from search, need complete information
+
+**When to use each message tool:**
+- 📋 `get-messages` - Browse conversations, search content, get history
+- 🔍 `get-message` - Analyze one specific message, check edit history
+
+**Channel vs Stream terminology**: Tools use "channel" (user-friendly) but API parameters use "stream" (technical) - they're the same thing.
 
 ## Testing & Quality
 

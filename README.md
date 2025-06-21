@@ -11,20 +11,27 @@ A Model Context Protocol (MCP) server that exposes Zulip REST API capabilities a
 - **Organization Info**: Server settings, policies, and custom emoji
 - **User Groups**: Available groups for mentions and permissions
 
-### 🛠️ **Tools** (19 Available Actions)
+### 🛠️ **Tools** (25 Available Actions)
+
+#### Helper Tools (LLM-Friendly Discovery)
+- `search-users` - Find users by name/email before sending DMs
+- `get-started` - Test connection and get workspace overview
 
 #### Message Operations
 - `send-message` - Send to channels or direct messages
 - `get-messages` - Retrieve with advanced filtering and search
+- `get-message` - Get detailed information about specific message
 - `upload-file` - Share files and images
 - `edit-message` - Modify content or move topics
 - `delete-message` - Remove messages (admin permissions required)
 - `get-message-read-receipts` - Check who read messages
 - `add-emoji-reaction` - React with Unicode or custom emoji
+- `remove-emoji-reaction` - Remove emoji reactions from messages
 
 #### Scheduled Messages & Drafts
 - `create-scheduled-message` - Schedule future messages
 - `edit-scheduled-message` - Modify scheduled messages
+- `create-draft` - Create new message drafts
 - `get-drafts` - Retrieve saved drafts
 - `edit-draft` - Update draft content
 
@@ -35,8 +42,9 @@ A Model Context Protocol (MCP) server that exposes Zulip REST API capabilities a
 - `get-topics-in-channel` - Browse recent topics
 
 #### User Operations
-- `get-user-by-email` - Find users by email
 - `get-users` - List organization members
+- `get-user-by-email` - Find users by email
+- `get-user` - Get detailed user information by ID
 - `update-status` - Set status message and availability
 - `get-user-groups` - List available user groups
 
