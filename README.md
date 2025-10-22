@@ -2,11 +2,55 @@
 
 A Model Context Protocol (MCP) server that exposes Zulip REST API capabilities as tools for LLMs. This server allows AI assistants to interact with your Zulip workspace programmatically.
 
+**NPM Package:** [@dmikushin/zulip-mcp-server](https://www.npmjs.com/package/@dmikushin/zulip-mcp-server)
+
+## Quick Start
+
+**Recommended: Use npx (no installation required)**
+
+Add to Claude Desktop (`~/.claude/claude_desktop_config.json`):
+```json
+{
+  "mcpServers": {
+    "zulip": {
+      "command": "npx",
+      "args": ["@dmikushin/zulip-mcp-server"],
+      "env": {
+        "ZULIP_URL": "https://your-org.zulipchat.com",
+        "ZULIP_EMAIL": "your-bot@your-org.zulipchat.com",
+        "ZULIP_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+**Alternative: Global installation**
+```bash
+npm install -g @dmikushin/zulip-mcp-server
+```
+
+Then use in Claude Desktop:
+```json
+{
+  "mcpServers": {
+    "zulip": {
+      "command": "zulip-mcp-server",
+      "env": {
+        "ZULIP_URL": "https://your-org.zulipchat.com",
+        "ZULIP_EMAIL": "your-bot@your-org.zulipchat.com",
+        "ZULIP_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
 ## Features
 
 ### 🔄 **Resources** (Contextual Data)
 - **User Directory**: Browse organization members with roles and status
-- **Stream Directory**: Explore available streams and permissions  
+- **Stream Directory**: Explore available streams and permissions
 - **Message Formatting Guide**: Complete Zulip markdown syntax reference
 - **Organization Info**: Server settings, policies, and custom emoji
 - **User Groups**: Available groups for mentions and permissions
@@ -48,226 +92,51 @@ A Model Context Protocol (MCP) server that exposes Zulip REST API capabilities a
 - `update-status` - Set status message and availability
 - `get-user-groups` - List available user groups
 
+## Zulip Configuration
+
+### Getting Your API Credentials
+
+You need to obtain Zulip API credentials. You can use either a bot account (recommended) or your personal account:
+
+**Option 1: Bot Account (Recommended)**
+1. In your Zulip organization, go to **Settings** → **Your bots**
+2. Click **Add a new bot**
+3. Choose **Generic bot** type
+4. Set a name (e.g., "Claude MCP Bot")
+5. Copy the **bot email** and **API key**
+
+**Option 2: Personal Account**
+1. Go to **Settings** → **Account & privacy**
+2. Click **Show/change your API key**
+3. Copy your **email** and **API key**
+
+### Required Permissions
+The bot/user needs these permissions:
+- Send messages to streams
+- Send private messages
+- Read all messages (for message retrieval)
+- Access user information
+
+### Environment Variables
+Set these in your Claude Desktop configuration:
+```bash
+ZULIP_URL=https://your-org.zulipchat.com    # Your Zulip server URL
+ZULIP_EMAIL=your-bot@your-org.zulipchat.com # Bot email or your email
+ZULIP_API_KEY=your_api_key_here             # API key from above steps
+```
+
 ## 📝 Zulip Terminology: Streams vs Channels
 
 In Zulip, **"streams"** and **"channels"** refer to the same concept:
 - **Stream** = Official Zulip terminology (used in API, tools, interface)
-- **Channel** = Common term from Slack/Discord/Teams  
+- **Channel** = Common term from Slack/Discord/Teams
 - **Same thing** = Conversation spaces where teams discuss topics
 
 This MCP server uses "stream" to match Zulip's official documentation and API.
 
-## Installation & Setup
+## Usage in Claude
 
-### Prerequisites
-- Node.js 18+ with npm
-- TypeScript 5+
-- Access to a Zulip instance (e.g., https://your-organization.zulipchat.com)
-- Zulip API credentials (bot token or API key)
-
-### Quick Start
-
-1. **Clone and install dependencies:**
-```bash
-git clone <repository-url>
-cd zulip-mcp-server
-npm install
-```
-
-2. **Configure environment variables:**
-```bash
-cp .env.example .env
-# Edit .env with your Zulip credentials
-```
-
-3. **Build and run:**
-```bash
-npm run build
-npm start
-```
-
-### Environment Configuration
-
-Create a `.env` file with your Zulip credentials:
-
-```env
-ZULIP_URL=https://your-organization.zulipchat.com
-ZULIP_EMAIL=your-bot-email@yourcompany.com
-ZULIP_API_KEY=your-api-key-here
-NODE_ENV=production
-```
-
-#### Getting Zulip API Credentials
-
-1. **For Bot Access** (Recommended):
-   - Go to your Zulip organization settings
-   - Navigate to "Bots" section
-   - Create a new bot or use existing one
-   - Copy the bot email and API key
-
-2. **For Personal Access**:
-   - Go to Personal Settings → Account & Privacy
-   - Find "API key" section
-   - Generate or reveal your API key
-
-### Claude Desktop Integration
-
-To use this MCP server with Claude Desktop, add the following configuration to your Claude Desktop config file:
-
-#### Option 1: Using Environment Variables (Recommended)
-
-Add to your Claude Desktop configuration:
-```json
-{
-  "mcpServers": {
-    "zulip": {
-      "command": "node",
-      "args": ["/path/to/zulip-mcp-server/dist/server.js"],
-      "env": {
-        "ZULIP_URL": "https://your-organization.zulipchat.com",
-        "ZULIP_EMAIL": "your-bot-email@yourcompany.com", 
-        "ZULIP_API_KEY": "your-api-key-here"
-      }
-    }
-  }
-}
-```
-
-#### Option 2: Using .env File
-
-If you prefer using a `.env` file, ensure it's in the project directory and use:
-```json
-{
-  "mcpServers": {
-    "zulip": {
-      "command": "node",
-      "args": ["/path/to/zulip-mcp-server/dist/server.js"],
-      "cwd": "/path/to/zulip-mcp-server"
-    }
-  }
-}
-```
-
-**Claude Desktop Config Location:**
-- **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
-- **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
-
-### Cursor Integration
-
-To use this MCP server with Cursor IDE, add the following to your Cursor MCP settings:
-
-#### Cursor MCP Configuration
-
-Add to Cursor's MCP settings file (`.cursor-mcp/config.json` in your workspace or global settings):
-
-```json
-{
-  "mcpServers": {
-    "zulip": {
-      "command": "node",
-      "args": ["/path/to/zulip-mcp-server/dist/server.js"],
-      "env": {
-        "ZULIP_URL": "https://your-organization.zulipchat.com",
-        "ZULIP_EMAIL": "your-bot-email@yourcompany.com",
-        "ZULIP_API_KEY": "your-api-key-here"
-      },
-      "capabilities": {
-        "tools": true,
-        "resources": true
-      }
-    }
-  }
-}
-```
-
-**Cursor MCP Config Location:**
-- **Workspace**: `.cursor-mcp/config.json` in your project root
-- **Global**: Platform-specific Cursor settings directory
-
-### Raycast MCP Extension
-
-To use this MCP server with Raycast, configure it in the MCP extension settings:
-
-#### Raycast MCP Configuration
-
-Add to Raycast MCP extension configuration:
-
-```json
-{
-  "servers": {
-    "zulip": {
-      "name": "Zulip Integration",
-      "description": "Send messages and interact with Zulip workspace",
-      "command": "node",
-      "args": ["/path/to/zulip-mcp-server/dist/server.js"],
-      "env": {
-        "ZULIP_URL": "https://your-organization.zulipchat.com",
-        "ZULIP_EMAIL": "your-bot-email@yourcompany.com",
-        "ZULIP_API_KEY": "your-api-key-here"
-      },
-      "icon": "💬",
-      "categories": ["communication", "productivity"]
-    }
-  }
-}
-```
-
-**Raycast Setup Steps:**
-1. Install the Raycast MCP extension
-2. Open Raycast preferences → Extensions → MCP
-3. Add new server configuration
-4. Paste the JSON configuration above
-5. Update paths and credentials accordingly
-
-**Raycast Usage:**
-- Use `⌘ + Space` to open Raycast
-- Search for "Zulip" commands
-- Execute MCP tools directly from Raycast interface
-
-### Supported MCP Clients
-
-This server is compatible with any MCP-compliant client. Here are the verified integrations:
-
-| Platform | Config Type | Status | Usage |
-|----------|-------------|---------|-------|
-| **Claude Desktop** | JSON config | ✅ Verified | AI conversations with Zulip integration |
-| **Cursor IDE** | Workspace/Global config | ✅ Verified | Code editor with Zulip notifications |
-| **Raycast** | Extension config | ✅ Verified | Quick commands and automation |
-| **Other MCP Clients** | Standard MCP protocol | 🔄 Compatible | Any MCP-compliant application |
-
-**Universal MCP Command:**
-```bash
-node /path/to/zulip-mcp-server/dist/server.js
-```
-
-## Development
-
-### Scripts
-```bash
-npm run dev          # Development with hot reload
-npm run build        # Build for production
-npm test            # Run tests
-npm run lint        # Lint TypeScript
-npm run typecheck   # Type checking
-```
-
-### Project Structure
-```
-src/
-├── server.ts        # Main MCP server
-├── zulip/
-│   └── client.ts    # Zulip API client
-└── types.ts         # TypeScript definitions
-```
-
-### Testing
-
-Test the server using MCP Inspector:
-```bash
-npx @modelcontextprotocol/inspector npm start
-```
-
-## Usage Examples
+After adding the MCP server to Claude Desktop configuration, restart Claude and you'll have access to Zulip tools. Here are some examples:
 
 ### Sending Messages
 ```typescript
@@ -314,6 +183,71 @@ await callTool("get-topics-in-stream", {
 });
 ```
 
+## Development Setup
+
+If you want to contribute or run from source:
+
+1. **Clone and build the server:**
+   ```bash
+   git clone https://github.com/dmikushin/zulip-mcp-server.git
+   cd zulip-mcp-server
+   npm install
+   npm run build
+   ```
+
+2. **Set up environment variables** (create `.env` file or set in your shell):
+   ```bash
+   ZULIP_URL=https://your-org.zulipchat.com
+   ZULIP_EMAIL=your-bot@your-org.zulipchat.com
+   ZULIP_API_KEY=your_api_key_here
+   ```
+
+3. **Add to Claude Desktop** for local development:
+   ```json
+   {
+     "mcpServers": {
+       "zulip": {
+         "command": "node",
+         "args": ["/path/to/zulip-mcp-server/dist/server.js"],
+         "env": {
+           "ZULIP_URL": "https://your-org.zulipchat.com",
+           "ZULIP_EMAIL": "your-bot@your-org.zulipchat.com",
+           "ZULIP_API_KEY": "your_api_key_here"
+         }
+       }
+     }
+   }
+   ```
+
+### Testing
+
+**Test the published package:**
+```bash
+npx @dmikushin/zulip-mcp-server
+```
+
+**Test during development:**
+```bash
+npm run dev
+# or
+npx @modelcontextprotocol/inspector
+```
+
+### Scripts
+```bash
+npm run dev          # Development with hot reload
+npm run build        # Build for production
+npm test            # Run tests
+npm run lint        # Lint TypeScript
+npm run typecheck   # Type checking
+```
+
+## Claude Desktop Config Location
+
+**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+**Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+**Linux**: `~/.claude/claude_desktop_config.json`
+
 ## Markdown Formatting Support
 
 The server includes a comprehensive formatting guide resource. Zulip supports:
@@ -326,18 +260,6 @@ The server includes a comprehensive formatting guide resource. Zulip supports:
 - **Spoilers**: `||hidden content||`
 - **Custom Emoji**: Organization-specific emoji
 
-## Error Handling
-
-The server provides comprehensive error handling:
-- Network connectivity issues
-- Authentication failures
-- Permission errors
-- Rate limiting
-- Invalid parameters
-- Zulip API errors
-
-All errors include helpful messages for debugging.
-
 ## Contributing
 
 1. Fork the repository
@@ -349,6 +271,6 @@ All errors include helpful messages for debugging.
 ## Support
 
 For issues and questions:
-- Check Zulip API documentation: https://zulip.com/api/
-- Review MCP specification: https://modelcontextprotocol.io/
-- Open GitHub issues for bugs or feature requests
+- **GitHub Issues**: https://github.com/dmikushin/zulip-mcp-server/issues
+- **Zulip API Docs**: https://zulip.com/api/
+- **MCP Specification**: https://modelcontextprotocol.io/
