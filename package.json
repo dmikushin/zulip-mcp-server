@@ -1,5 +1,5 @@
 {
-  "name": "zulip-mcp-server",
+  "name": "@dmikushin/zulip-mcp-server",
   "version": "1.5.0",
   "description": "MCP server that exposes Zulip REST API capabilities as tools for LLMs",
   "main": "dist/server.js",
@@ -28,8 +28,24 @@
     "llm",
     "tools"
   ],
-  "author": "Clarisights",
+  "author": "Dmitry Mikushin <dmitry@kernelgen.org>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dmikushin/zulip-mcp-server.git"
+  },
+  "homepage": "https://github.com/dmikushin/zulip-mcp-server#readme",
+  "bugs": {
+    "url": "https://github.com/dmikushin/zulip-mcp-server/issues"
+  },
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "package.json"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "axios": "^1.6.0",
