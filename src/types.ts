@@ -134,7 +134,9 @@ export const UploadFileSchema = z.object({
 export const EditMessageSchema = z.object({
   message_id: z.number().describe("Unique ID of the message to edit"),
   content: z.string().optional().describe("New message content with Markdown formatting"),
-  topic: z.string().optional().describe("New topic name (for stream messages only)")
+  topic: z.string().optional().describe("New topic name (for stream messages only)"),
+  stream_id: z.number().optional().describe("ID of the target stream to move the message to"),
+  propagate_mode: z.enum(["change_one", "change_later", "change_all"]).optional().describe("How to handle other messages in the same topic: change_one (default), change_later (this and later), change_all (whole topic)")
 });
 
 export const AddReactionSchema = z.object({

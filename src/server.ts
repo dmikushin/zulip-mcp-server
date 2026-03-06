@@ -496,13 +496,13 @@ server.tool(
 
 server.tool(
   "edit-message",
-  "Edit an existing message's content or topic.",
+  "Edit a message's content, topic, or move it to another stream.",
   EditMessageSchema.shape,
-  async ({ message_id, content, topic }) => {
+  async ({ message_id, content, topic, stream_id, propagate_mode }) => {
     try {
-      const updateParams = filterUndefined({ content, topic });
+      const updateParams = filterUndefined({ content, topic, stream_id, propagate_mode });
       if (Object.keys(updateParams).length === 0) {
-        return createErrorResponse('At least one of content or topic must be provided for message update');
+        return createErrorResponse('At least one of content, topic, or stream_id must be provided for message update');
       }
       await zulipClient.updateMessage(message_id, updateParams);
       return createSuccessResponse(`Message ${message_id} updated successfully!`);

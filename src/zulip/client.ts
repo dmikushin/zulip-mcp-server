@@ -184,12 +184,23 @@ export class ZulipClient {
   async updateMessage(messageId: number, params: {
     content?: string;
     topic?: string;
+    stream_id?: number;
+    propagate_mode?: string;
   }): Promise<void> {
     // Filter out undefined values
     const filteredParams = Object.fromEntries(
       Object.entries(params).filter(([, value]) => value !== undefined)
     );
-    await this.client.patch(`/messages/${messageId}`, filteredParams);
+    await this.client.patch(`/messages/${messageId}`, filteredParams, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      },
+      transformRequest: [(data: Record<string, unknown>) => {
+        return Object.entries(data)
+          .map(([key, value]) => `${encodeURIComponent(key)}=${encodeURIComponent(String(value))}`)
+          .join('&');
+      }]
+    });
   }
 
   async deleteMessage(messageId: number): Promise<void> {
